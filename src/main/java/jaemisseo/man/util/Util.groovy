@@ -13,26 +13,44 @@ class Util {
      */
     static printProgressBar(int currentIndex, int totalIndex){
         //Delay
-        Thread.sleep(30)
+        Thread.sleep(10)
 
-        //Start
+        //Calculate
+        int maxNum = 20
+        int nowNum = (currentIndex / totalIndex) * maxNum
+
+        //Print Start
         print '\r['
 
-        //Progress
-        if (currentIndex != -1 )
-            print ((0..currentIndex).collect{ '>' }.join('') as String)
+        //Print Progress
+        if (nowNum > 0 )
+            print ((1..nowNum).collect{ '>' }.join('') as String)
 
-        //Remain
-        if ( (totalIndex - currentIndex) != 0 )
-            print ((currentIndex..(totalIndex-1)).collect{' '}.join('') as String)
+        //Print Remain
+        if ( (maxNum - nowNum) > 0 )
+            print ((nowNum..maxNum).collect{' '}.join('') as String)
 
-        //Last
-        if (currentIndex == totalIndex)
+        //Print Last
+        //End
+        if (nowNum >= maxNum)
             print '] DONE  \n'
-        else if (currentIndex == 0)
-            print '] START'
+        //Start
+        else if (nowNum == 0)
+            print ']'
+        // Progressing...
         else
             print ']'
+    }
+
+    static clearProgressBar(int currentIndex, int totalIndex){
+        //Calculate
+        int maxNum = 20
+
+        //to Delete
+        print '\r'
+        print ((1..maxNum).collect{' '}.join('') as String)
+        //to Init
+        print '\r'
     }
 
 
