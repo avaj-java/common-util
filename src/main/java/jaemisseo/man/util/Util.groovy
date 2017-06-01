@@ -5,52 +5,58 @@ package jaemisseo.man.util
  */
 class Util {
 
-    /**
-     * PRINT PROGRESS BAR
-     * @param currentIndex
-     * @param totalIndex
-     * @return
-     */
-    static printProgressBar(int currentIndex, int totalIndex){
+    /*************************
+     * PROGRESS BAR
+     *************************/
+    static void withProgressBar(int currentIndex, int totalIndex, int barSize){
+        withProgressBar(currentIndex, totalIndex, barSize, null)
+    }
+
+    static boolean withProgressBar(int currentIndex, int totalIndex, int barSize, Closure progressClosure){
+        boolean result
+        //Clear
+        clearProgressBar(barSize)
+        //Set Param
+        result = (progressClosure) ? progressClosure() : true
+        //Print
+        printProgressBar(currentIndex, totalIndex, barSize)
+        return result
+    }
+
+
+    static void printProgressBar(int currentIndex, int totalIndex, int barSize){
         //Delay
         Thread.sleep(10)
 
         //Calculate
-        int maxNum = 20
-        int nowNum = (currentIndex / totalIndex) * maxNum
+        int curNum = (currentIndex / totalIndex) * barSize
+        int curPer = (currentIndex / totalIndex) * 100
 
         //Print Start
         print '\r['
 
         //Print Progress
-        if (nowNum > 0 )
-            print ((1..nowNum).collect{ '>' }.join('') as String)
+        if (curNum > 0 )
+            print ((1..curNum).collect{ '>' }.join('') as String)
 
         //Print Remain
-        if ( (maxNum - nowNum) > 0 )
-            print ((nowNum..maxNum).collect{' '}.join('') as String)
+        if ( (barSize - curNum) > 0 )
+            print ((curNum..barSize).collect{' '}.join('') as String)
 
         //Print Last
         //End
-        if (nowNum >= maxNum)
+        if (curNum >= barSize)
             print '] DONE  \n'
-        //Start
-        else if (nowNum == 0)
-            print ']'
         // Progressing...
         else
-            print ']'
+            print "] ${curPer}%"
     }
 
-    static clearProgressBar(int currentIndex, int totalIndex){
-        //Calculate
-        int maxNum = 20
-
-        //to Delete
-        print '\r'
-        print ((1..maxNum).collect{' '}.join('') as String)
-        //to Init
-        print '\r'
+    static void clearProgressBar(int barSize){
+        //Delete
+        print "\r ${(1..barSize).collect{' '}.join('') as String}"
+        //Init
+        print "\r"
     }
 
 
@@ -61,11 +67,11 @@ class Util {
      * @param condition
      * @return
      */
-    def static find(def object, def condition){
+    static def find(def object, def condition){
         return find(object, condition, null)
     }
 
-    def static find(def object, def condition, Closure closure){
+    static def find(def object, def condition, Closure closure){
         if (object instanceof Map){
             def matchedObj = getMatchedObject(object, condition, closure)
             return matchedObj
@@ -81,7 +87,7 @@ class Util {
         return [:]
     }
 
-    def static getMatchedObject(def object, def condition, Closure closure){
+    static def getMatchedObject(def object, def condition, Closure closure){
         if (condition instanceof String){
             condition = [id:condition]
         }
