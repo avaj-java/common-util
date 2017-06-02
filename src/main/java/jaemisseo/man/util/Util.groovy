@@ -8,8 +8,8 @@ class Util {
     /*************************
      * PROGRESS BAR
      *************************/
-    static void withProgressBar(int currentIndex, int totalIndex, int barSize){
-        withProgressBar(currentIndex, totalIndex, barSize, null)
+    static boolean withProgressBar(int currentIndex, int totalIndex, int barSize){
+        return withProgressBar(currentIndex, totalIndex, barSize, null)
     }
 
     static boolean withProgressBar(int currentIndex, int totalIndex, int barSize, Closure progressClosure){
@@ -23,25 +23,21 @@ class Util {
         return result
     }
 
-
     static void printProgressBar(int currentIndex, int totalIndex, int barSize){
         //Delay
         Thread.sleep(10)
-
         //Calculate
         int curNum = (currentIndex / totalIndex) * barSize
         int curPer = (currentIndex / totalIndex) * 100
 
         //Print Start
         print '\r['
-
         //Print Progress
         if (curNum > 0 )
             print ((1..curNum).collect{ '>' }.join('') as String)
-
         //Print Remain
         if ( (barSize - curNum) > 0 )
-            print ((curNum..barSize).collect{' '}.join('') as String)
+            print ((curNum..barSize-1).collect{' '}.join('') as String)
 
         //Print Last
         //End
@@ -61,12 +57,9 @@ class Util {
 
 
 
-    /**
+    /*************************
      * FIND OBJECT
-     * @param object
-     * @param condition
-     * @return
-     */
+     *************************/
     static def find(def object, def condition){
         return find(object, condition, null)
     }
@@ -120,6 +113,30 @@ class Util {
         }
         if (condition == null)
             return object
+    }
+
+    /*************************
+     * Thread
+     *************************/
+    static Thread newThread(Closure threadRunClosure){
+        //Create Thread
+        Thread thread = new Thread(new Runnable(){void run(){
+            threadRunClosure()
+        }})
+        //Start Thread
+        thread.start()
+        //Return Thread
+        return thread
+    }
+
+    static Thread newThread(String interruptMessage, Closure threadRunClosure){
+        return newThread{
+            try{
+                threadRunClosure()
+            }catch(InterruptedException e){
+                println interruptMessage
+            }
+        }
     }
 
 }
