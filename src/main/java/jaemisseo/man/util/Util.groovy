@@ -1,5 +1,7 @@
 package jaemisseo.man.util
 
+import java.lang.reflect.Constructor
+
 /**
  * Created by sujkim on 2017-05-29.
  */
@@ -115,6 +117,70 @@ class Util {
             return object
     }
 
+
+
+    /*************************
+     * Find All Classes
+     *************************/
+    /**
+     * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
+     *
+     * @param packageName The base package
+     * @return The classes
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    static List<Class> findAllClasses(String packageName) throws ClassNotFoundException, IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        assert classLoader != null;
+        String path = packageName.replace('.', '/');
+        Enumeration resources = classLoader.getResources(path);
+        //Collect Directories
+        List dirList = []
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement()
+            dirList.add(new File(resource.getFile()))
+        }
+        //Collect Classes
+        List<File> classList = []
+        dirList.each{ dir ->
+            classList.addAll(findAllClasses(dir, packageName))
+        }
+        return classList
+    }
+
+    static List<Class> findAllClasses(File directory, String packageName) throws ClassNotFoundException {
+        List<Class> classList = []
+        if (directory.exists()){
+            directory.listFiles().each{ file ->
+                String fileName = file.getName()
+                String classpath = "${packageName}.${fileName}"
+                if (file.isDirectory()){
+                    assert !fileName.contains(".");
+                    classList.addAll(findAllClasses(file, classpath))
+                }else if (fileName.endsWith(".class")){
+                    // Class
+                    Class clazz = Class.forName(classpath.substring(0, classpath.length() - 6))
+                    if (validateForClass(clazz))
+                        classList << clazz
+                }
+            }
+        }
+        return classList
+    }
+
+    static boolean validateForClass(Class clazz){
+        // Validate - Only Instance Makable Class
+        try{
+            Util.newInstance(clazz.getName())
+        }catch(e){
+            return false
+        }
+        return true
+    }
+
+
+
     /*************************
      * Thread
      *************************/
@@ -137,6 +203,51 @@ class Util {
                 println interruptMessage
             }
         }
+    }
+
+
+
+    /*************************
+     * newInstance
+     *************************/
+    static Object newInstance(String classpath){
+        return newInstance(classpath, [] as Class[], [] as Object[])
+    }
+
+    static Object newInstance(Class clazz){
+        return newInstance(clazz, [] as Class[], [] as Object[])
+    }
+
+    /**
+     * ex)
+     *   Class[] types = [Double.TYPE]
+     *   Object[] parameters = [new Double(0)]
+     */
+    static Object newInstance(String classpath, Class[] types, Object[] parameters){
+        Class clazz = Class.forName(classpath)
+        return newInstance(clazz, types, parameters)
+    }
+
+    static Object newInstance(Class clazz, Class[] types, Object[] parameters){
+        Constructor constructor = clazz.getConstructor(types)
+        Object instance = constructor.newInstance(parameters)
+        return instance
+    }
+
+
+
+    /*************************
+     * Check JUnit Test
+     *************************/
+    static boolean isJUnitTest() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace()
+        List<StackTraceElement> list = Arrays.asList(stackTrace)
+        for (StackTraceElement element : list) {
+            if (element.getClassName().startsWith("org.junit.")) {
+                return true
+            }
+        }
+        return false
     }
 
 }

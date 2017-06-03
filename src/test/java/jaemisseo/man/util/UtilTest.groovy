@@ -93,4 +93,26 @@ class UtilTest {
         }
     }
 
+    /*************************
+     * newInstance
+     *************************/
+    @Test
+    void newInstance(){
+        assert 'class java.lang.String' == Util.newInstance('java.lang.String').getClass().toString()
+        assert 'java.lang.String'       == Util.newInstance('java.lang.String').getClass().getName()
+        assert 'java.lang.String'       == Util.newInstance('java.lang.String').getClass().getCanonicalName()
+        assert 'String'                 == Util.newInstance('java.lang.String').getClass().getSimpleName()
+    }
+
+    /*************************
+     * findAllClasses
+     *************************/
+    @Test
+    void findAllClass(){
+        List<Class<?>> classList = Util.findAllClasses("jaemisseo.man")
+        classList.each{ println it }
+        
+        Util.findAllClasses("java.lang").each{ println it }
+    }
+
 }
