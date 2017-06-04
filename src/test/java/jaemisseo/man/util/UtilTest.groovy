@@ -105,14 +105,28 @@ class UtilTest {
     }
 
     /*************************
+     * findAllSourcePath
+     *************************/
+    @Test
+    void findAllSourcePath(){
+        List<Class<?>> pathList = Util.findAllSourcePath("jaemisseo/man")
+        pathList.each{ println it }
+
+        println "/////"
+        
+        List<Class<?>> pathList2 = Util.findAllSourcePathByPackageName("jaemisseo.man")
+        pathList2.each{ println it }
+
+        assert pathList.size() == pathList2.size()
+    }
+
+    /*************************
      * findAllClasses
      *************************/
     @Test
     void findAllClass(){
         List<Class<?>> classList = Util.findAllClasses("jaemisseo.man")
         classList.each{ println it }
-        
-        Util.findAllClasses("java.lang").each{ println it }
     }
 
 }

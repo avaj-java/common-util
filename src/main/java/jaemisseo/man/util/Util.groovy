@@ -1,6 +1,8 @@
 package jaemisseo.man.util
 
 import java.lang.reflect.Constructor
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
 
 /**
  * Created by sujkim on 2017-05-29.
@@ -117,7 +119,59 @@ class Util {
             return object
     }
 
+    /*************************
+     * Find All SourcePath
+     *************************/
+    static List<String> findAllSourcePathByPackageName(String packageName){
+        return findAllSourcePath(packageName.replace('.', '/'))
+    }
 
+    static List<String> findAllSourcePathBySourcePath(String sourcePath){
+        return findAllSourcePath(sourcePath)
+    }
+
+    static List<String> findAllSourcePath(String sourcePath){
+        List<String> resultList = []
+        List<URL> urlList = Thread.currentThread().getContextClassLoader().getResources(sourcePath).toList()
+        List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()
+        urlList.each{ url ->
+            if (url.protocol == 'jar'){
+                String jarPath = url.getPath().substring(5, url.getPath().indexOf("!")) //strip out only the JAR file
+                JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"))
+                Enumeration<JarEntry> entries = jar.entries()
+                while(entries.hasMoreElements()) {
+                    String entryRelpath = entries.nextElement().getName()
+                    if (entryRelpath.startsWith(sourcePath)){ //filter according to the path
+                        String entry = entryRelpath.substring(sourcePath.length())
+                        resultList << entryRelpath
+                    }
+                }
+            }else{
+                File sourceDirectory = new File(url.toURI())
+                URL rootURL = rootUrlList.find{ sourceDirectory.path.startsWith(new File(it.toURI()).path) }
+                if (rootURL){
+                    File rootDirectory = new File(rootURL.toURI())
+                    resultList.addAll( findAllSourcePath(sourceDirectory, rootDirectory) )
+                }
+            }
+        }
+        return resultList
+    }
+
+    static List<String> findAllSourcePath(File directory, File rootDirectory) throws ClassNotFoundException {
+        List<String> resultList = []
+        if (directory.exists()){
+            directory.listFiles().each{ node ->
+                String oneFilePath = node.getPath().substring(rootDirectory.path.length()+1, node.path.length())
+                if (node.isDirectory()){
+                    resultList.addAll(findAllSourcePath(node, rootDirectory))
+                }else{
+                    resultList << oneFilePath
+                }
+            }
+        }
+        return resultList
+    }
 
     /*************************
      * Find All Classes
@@ -131,42 +185,19 @@ class Util {
      * @throws IOException
      */
     static List<Class> findAllClasses(String packageName) throws ClassNotFoundException, IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        assert classLoader != null;
-        String path = packageName.replace('.', '/');
-        Enumeration resources = classLoader.getResources(path);
-        //Collect Directories
-        List dirList = []
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement()
-            dirList.add(new File(resource.getFile()))
-        }
-        //Collect Classes
-        List<File> classList = []
-        dirList.each{ dir ->
-            classList.addAll(findAllClasses(dir, packageName))
-        }
-        return classList
-    }
-
-    static List<Class> findAllClasses(File directory, String packageName) throws ClassNotFoundException {
-        List<Class> classList = []
-        if (directory.exists()){
-            directory.listFiles().each{ file ->
-                String fileName = file.getName()
-                String classpath = "${packageName}.${fileName}"
-                if (file.isDirectory()){
-                    assert !fileName.contains(".");
-                    classList.addAll(findAllClasses(file, classpath))
-                }else if (fileName.endsWith(".class")){
-                    // Class
-                    Class clazz = Class.forName(classpath.substring(0, classpath.length() - 6))
-                    if (validateForClass(clazz))
-                        classList << clazz
-                }
+        List<Class> clazzList = []
+        List<String> entryList = findAllSourcePathByPackageName(packageName)
+        entryList.each{ entityRelpath ->
+            //remove .class
+            //replace / => .
+            if (entityRelpath.endsWith('.class')){
+                String classpath = entityRelpath.substring(0, entityRelpath.length() - 6).replaceAll(/[\/\\]+/, '.')
+                Class clazz = Class.forName(classpath)
+                if (validateForClass(clazz))
+                    clazzList << clazz
             }
         }
-        return classList
+        return clazzList
     }
 
     static boolean validateForClass(Class clazz){
