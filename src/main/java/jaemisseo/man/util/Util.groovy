@@ -1,5 +1,6 @@
 package jaemisseo.man.util
 
+import java.lang.annotation.Annotation
 import java.lang.reflect.Constructor
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -178,13 +179,51 @@ class Util {
      *************************/
     /**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
-     *
-     * @param packageName The base package
-     * @return The classes
-     * @throws ClassNotFoundException
-     * @throws IOException
      */
+    static List<Class> findAllClasses() throws ClassNotFoundException, IOException {
+        return findAllClasses('')
+    }
+
+    static List<Class> findAllClasses(Class annotation) throws ClassNotFoundException, IOException {
+        return findAllClasses('', annotation)
+    }
+
+    static List<Class> findAllClasses(List<Annotation> annotationList) throws ClassNotFoundException, IOException {
+        return findAllClasses('', annotationList)
+    }
+
+
     static List<Class> findAllClasses(String packageName) throws ClassNotFoundException, IOException {
+        return findAllClasses(packageName){ Class clazz -> validateForClass(clazz) }
+    }
+
+    static List<Class> findAllClasses(String packageName, Class annotation) throws ClassNotFoundException, IOException {
+        return findAllClasses(packageName, annotation, null)
+    }
+
+    static List<Class> findAllClasses(String packageName, List<Annotation> annotationList) throws ClassNotFoundException, IOException {
+        return findAllClasses(packageName, annotationList, null)
+    }
+
+
+    static List<Class> findAllClasses(Closure closure) throws ClassNotFoundException, IOException {
+        List<Class> clazzList = findAllClasses(''){ Class clazz -> validateForClass(clazz) }
+        if (closure)
+            clazzList = clazzList.findAll{ closure(it) }
+        return clazzList
+    }
+
+    static List<Class> findAllClasses(Class annotation, Closure closure) throws ClassNotFoundException, IOException {
+        return findAllClasses([annotation], closure)
+    }
+
+    static List<Class> findAllClasses(List<Annotation> annotationList, Closure closure) throws ClassNotFoundException, IOException {
+        return findAllClasses('', annotationList, closure)
+    }
+
+
+
+    static List<Class> findAllClasses(String packageName, Closure closure) throws ClassNotFoundException, IOException {
         List<Class> clazzList = []
         List<String> entryList = findAllSourcePathByPackageName(packageName)
         entryList.each{ entityRelpath ->
@@ -193,10 +232,24 @@ class Util {
             if (entityRelpath.endsWith('.class')){
                 String classpath = entityRelpath.substring(0, entityRelpath.length() - 6).replaceAll(/[\/\\]+/, '.')
                 Class clazz = Class.forName(classpath)
-                if (validateForClass(clazz))
-                    clazzList << clazz
+                clazzList << clazz
             }
         }
+        if (closure)
+            clazzList = clazzList.findAll{ closure(it) }
+        return clazzList
+    }
+
+    static List<Class> findAllClasses(String packageName, Class annotation, Closure closure) throws ClassNotFoundException, IOException {
+        return findAllClasses(packageName, [annotation], closure)
+    }
+
+    static List<Class> findAllClasses(String packageName, List<Annotation> annotationList, Closure closure) throws ClassNotFoundException, IOException {
+        List<Class> clazzList = findAllClasses(packageName){ Class clazz ->
+            return clazz.getAnnotations().findAll{ annotationList.contains(it.annotationType()) }
+        }
+        if (closure)
+            clazzList = clazzList.findAll{ closure(it) }
         return clazzList
     }
 

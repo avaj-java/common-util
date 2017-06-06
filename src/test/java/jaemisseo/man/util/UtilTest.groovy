@@ -1,6 +1,9 @@
 package jaemisseo.man.util
 
 import org.junit.Test
+import org.junit.experimental.theories.DataPoint
+
+import javax.jws.soap.SOAPBinding
 
 /**
  * Created by sujkim on 2017-05-31.
@@ -125,8 +128,46 @@ class UtilTest {
      *************************/
     @Test
     void findAllClass(){
-        List<Class<?>> classList = Util.findAllClasses("jaemisseo.man")
-        classList.each{ println it }
+
+        println '\n\n///////////////////////// No Condition'
+        Util.findAllClasses().each {
+           println it
+        }
+        println '\n\n///////////////////////// Condition{ Custom }'
+        Util.findAllClasses(){ return true }.each {
+            println it
+        }
+
+        println '\n\n///////////////////////// Condition( Package )'
+        Util.findAllClasses('jaemisseo.man').each {
+            println it
+        }
+
+        println '\n\n///////////////////////// Condition( Package + Annotation )'
+        Util.findAllClasses("jaemisseo.man", SOAPBinding).each{
+            println it
+        }
+
+        println '\n\n///////////////////////// Condition{ Package + Annotation + Custom }'
+        Util.findAllClasses("jaemisseo.man", SOAPBinding){ return true }.each{
+            println it
+        }
+
+        println '\n\n///////////////////////// Condition( Package + AnnotationList )'
+        Util.findAllClasses("jaemisseo.man", [DataPoint, SOAPBinding]).each{
+            println it
+        }
+
+        println '\n\n///////////////////////// FInd All Infomation'
+        Util.findAllClasses().each { Class clazz ->
+            println clazz
+            println clazz.getAnnotations()
+            println clazz.getDeclaredAnnotations()
+            println clazz.getDeclaredConstructors()
+            println clazz.getDeclaredFields()
+            println clazz.getDeclaredMethods()
+            println '===== ===== ===== ===== ===== ===== ====='
+        }
     }
 
 }
