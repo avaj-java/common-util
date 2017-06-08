@@ -13,6 +13,14 @@ class Util {
     /*************************
      * PROGRESS BAR
      *************************/
+    static boolean eachWithProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalIndex = (progressList) ? progressList.size() -1 : 0
+        progressList.eachWithIndex{ Object obj, int i ->
+            eachClosure(obj, i)
+            withProgressBar(i, totalIndex, barSize){}
+        }
+    }
+
     static boolean withProgressBar(int currentIndex, int totalIndex, int barSize){
         return withProgressBar(currentIndex, totalIndex, barSize, null)
     }
@@ -29,8 +37,6 @@ class Util {
     }
 
     static void printProgressBar(int currentIndex, int totalIndex, int barSize){
-        //Delay
-        Thread.sleep(10)
         //Calculate
         int curNum = (currentIndex / totalIndex) * barSize
         int curPer = (currentIndex / totalIndex) * 100
@@ -51,6 +57,9 @@ class Util {
         // Progressing...
         else
             print "] ${curPer}%"
+
+        //Delay
+        Thread.sleep(1)
     }
 
     static void clearProgressBar(int barSize){
