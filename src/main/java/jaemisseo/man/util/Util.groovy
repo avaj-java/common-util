@@ -343,4 +343,25 @@ class Util {
         return false
     }
 
+    /*************************
+     * Line Up, String!
+     *************************/
+    static int getLongestLength(List list, String fieldName){
+        return getLongestLength( list.collect{it[fieldName]} )
+    }
+
+    static int getLongestLength(List<String> list){
+        int longestLength = -1
+        list.each{ def text ->
+            int length = text?.length()
+            if (longestLength < length)
+                longestLength = length
+        }
+        return longestLength
+    }
+
+    static String getSpacesToLineUp(String stringItem, int bestLongerLength){
+        return (stringItem.length() < bestLongerLength) ? (1..(bestLongerLength - stringItem.length())).collect{' '}.join('') : ''
+    }
+
 }
