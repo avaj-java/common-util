@@ -4,6 +4,7 @@ import org.junit.Test
 import org.junit.experimental.theories.DataPoint
 
 import javax.jws.soap.SOAPBinding
+import java.lang.annotation.Annotation
 
 /**
  * Created by sujkim on 2017-05-31.
