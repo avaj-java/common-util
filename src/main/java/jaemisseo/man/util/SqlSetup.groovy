@@ -27,6 +27,11 @@ class SqlSetup extends Option<SqlSetup>{
     def replaceDatafile
     def replacePassword
 
+    //-Validation
+    List<String> commandListToCheckIfMustExistBefore = ['INSERT', 'UPDATE', 'DELETE', 'DROP']
+    List<String> commandListToCheckIfMustNotExistBefore = ['CREATE']
+
+    //-Mode
     Boolean modeSqlExecute
     Boolean modeSqlCheckBefore
     Boolean modeSqlFileGenerate
