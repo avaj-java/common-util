@@ -193,11 +193,11 @@ class Util {
         return findAllClasses('')
     }
 
-    static List<Class> findAllClasses(def annotation) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(Annotation annotation) throws ClassNotFoundException, IOException {
         return findAllClasses('', annotation)
     }
 
-    static List<Class> findAllClasses(List annotationList) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(List<Annotation> annotationList) throws ClassNotFoundException, IOException {
         return findAllClasses('', annotationList)
     }
 
@@ -206,11 +206,11 @@ class Util {
         return findAllClasses(packageName){ Class clazz -> validateForClass(clazz) }
     }
 
-    static List<Class> findAllClasses(String packageName, def annotation) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(String packageName, Annotation annotation) throws ClassNotFoundException, IOException {
         return findAllClasses(packageName, annotation, null)
     }
 
-    static List<Class> findAllClasses(String packageName, List annotationList) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(String packageName, List<Annotation> annotationList) throws ClassNotFoundException, IOException {
         return findAllClasses(packageName, annotationList, null)
     }
 
@@ -222,11 +222,11 @@ class Util {
         return clazzList
     }
 
-    static List<Class> findAllClasses(def annotation, Closure closure) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(Annotation annotation, Closure closure) throws ClassNotFoundException, IOException {
         return findAllClasses([annotation], closure)
     }
 
-    static List<Class> findAllClasses(List annotationList, Closure closure) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(List<Annotation> annotationList, Closure closure) throws ClassNotFoundException, IOException {
         return findAllClasses('', annotationList, closure)
     }
 
@@ -249,11 +249,11 @@ class Util {
         return clazzList
     }
 
-    static List<Class> findAllClasses(String packageName, def annotation, Closure closure) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(String packageName, Annotation annotation, Closure closure) throws ClassNotFoundException, IOException {
         return findAllClasses(packageName, [annotation], closure)
     }
 
-    static List<Class> findAllClasses(String packageName, List annotationList, Closure closure) throws ClassNotFoundException, IOException {
+    static List<Class> findAllClasses(String packageName, List<Annotation> annotationList, Closure closure) throws ClassNotFoundException, IOException {
         List<Class> clazzList = findAllClasses(packageName){ Class clazz ->
             return clazz.getAnnotations().findAll{ annotationList.contains(it.annotationType()) }
         }
