@@ -4,7 +4,6 @@ import org.junit.Test
 import org.junit.experimental.theories.DataPoint
 
 import javax.jws.soap.SOAPBinding
-import java.lang.annotation.Annotation
 
 /**
  * Created by sujkim on 2017-05-31.
@@ -39,9 +38,28 @@ class UtilTest {
         //Loop
         println 'Start'
         (0..total).each{
-            Util.clearProgressBar(barSize)
             Thread.sleep(80)
+            Util.clearProgressBar(barSize)
             Util.printProgressBar(it, total, barSize)
+        }
+
+        //Loop - method1
+        println "Start Just "
+        (0..total).each{
+            //Work
+            Thread.sleep(80)
+            //Re-print
+            Util.withProgressBar(it, total, barSize)
+        }
+
+        //Loop - method2
+        (0..total).each{
+            //Work
+            Thread.sleep(80)
+            //Re-print
+            Util.withProgressBar(it, total, barSize){
+                println "Ha Ha Ha ~"
+            }
         }
     }
 
@@ -61,19 +79,13 @@ class UtilTest {
         int total = 20
         int barSize = 30
 
-        //Loop - method1
-        println "Start Just "
-        (0..total).each{
+        //Just Work
+        Util.eachWithProgressBar([0, 1, 2, 5, 10, 50, 100], 20){ it->
             Thread.sleep(80)
-            Util.withProgressBar(it, total, barSize)
         }
 
-        //Loop - method2
-        (0..total).each{
+        Util.eachWithIndexAndProgressBar([0, 1, 2, 5, 10, 50, 100], 20){ it, i ->
             Thread.sleep(80)
-            Util.withProgressBar(it, total, barSize){
-                println "Ha Ha Ha ~ "
-            }
         }
     }
 

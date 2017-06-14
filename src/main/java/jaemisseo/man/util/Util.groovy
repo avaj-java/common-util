@@ -14,50 +14,90 @@ class Util {
      * PROGRESS BAR
      *************************/
     static boolean eachWithProgressBar(def progressList, int barSize, Closure eachClosure){
-        int totalIndex = (progressList) ? progressList.size() -1 : 0
-        progressList.eachWithIndex{ Object obj, int i ->
-            eachClosure(obj, i)
-            withProgressBar(i, totalIndex, barSize){}
+        int totalSize = (progressList) ? progressList.size() : 0
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Each
+        progressList.eachWithIndex { Object obj, int i ->
+            int count = i + 1
+            //Work
+            eachClosure(obj)
+            //Re-print
+            withProgressBar(count, totalSize, barSize){
+            }
         }
     }
 
-    static boolean withProgressBar(int currentIndex, int totalIndex, int barSize){
-        return withProgressBar(currentIndex, totalIndex, barSize, null)
+    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalSize = (progressList) ? progressList.size() : 0
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Each
+        progressList.eachWithIndex{ Object obj, int i ->
+            int count = i + 1
+            //Work
+            eachClosure(obj, count)
+            //Re-print
+            withProgressBar(count, totalSize, barSize){
+            }
+        }
     }
 
-    static boolean withProgressBar(int currentIndex, int totalIndex, int barSize, Closure progressClosure){
-        boolean result
+    static boolean eachWithCountAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalSize = (progressList) ? progressList.size() : 0
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Start Check Time
+        long startTime = new Date().getTime()
+        //Each
+        progressList.eachWithIndex{ Object obj, int i ->
+            int count = i + 1
+            //Work
+            eachClosure(obj, count)
+            //Re-print
+            withProgressBar(count, totalSize, barSize){
+            }
+        }
+        //End Check Time
+        long endTime = new Date().getTime()
+        double howTimeSecond = (endTime - startTime) / 1000
+    }
+
+    static boolean withProgressBar(int currentCount, int totalSize, int barSize){
+        return withProgressBar(currentCount, totalSize, barSize, null)
+    }
+
+    static boolean withProgressBar(int currentCount, int totalSize, int barSize, Closure progressClosure){
         //Clear
         clearProgressBar(barSize)
-        //Set Param
-        result = (progressClosure) ? progressClosure() : true
+        //print
+        boolean result = (progressClosure) ? progressClosure() : true
         //Print
-        printProgressBar(currentIndex, totalIndex, barSize)
+        printProgressBar(currentCount, totalSize, barSize)
         return result
     }
 
-    static void printProgressBar(int currentIndex, int totalIndex, int barSize){
+    static void printProgressBar(int currentCount, int totalSize, int barSize){
         //Calculate
-        int curNum = (currentIndex / totalIndex) * barSize
-        int curPer = (currentIndex / totalIndex) * 100
+        int curCntInBar = (currentCount / totalSize) * barSize
+        int curPercent = (currentCount / totalSize) * 100
 
         //Print Start
         print '\r['
         //Print Progress
-        if (curNum > 0 )
-            print ((1..curNum).collect{ '>' }.join('') as String)
+        if (curCntInBar > 0 )
+            print ((1..curCntInBar).collect{ '>' }.join('') as String)
         //Print Remain
-        if ( (barSize - curNum) > 0 )
-            print ((curNum..barSize-1).collect{' '}.join('') as String)
+        if ( (barSize - curCntInBar) > 0 )
+            print ((curCntInBar..barSize-1).collect{' '}.join('') as String)
 
         //Print Last
         //End
-        if (curNum >= barSize)
+        if (curCntInBar >= barSize)
             print '] DONE  \n'
         // Progressing...
         else
-            print "] ${curPer}%"
-
+            print "] ${curPercent}%"
         //Delay
         Thread.sleep(1)
     }
