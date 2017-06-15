@@ -28,8 +28,8 @@ class SqlSetup extends Option<SqlSetup>{
     def replacePassword
 
     //-Validation
-    List<String> commandListToCheckIfMustExistBefore = ['INSERT', 'UPDATE', 'DELETE', 'DROP']
-    List<String> commandListToCheckIfMustNotExistBefore = ['CREATE']
+    List<String> commnadListThatObjectMustExist = ['INSERT', 'UPDATE', 'DELETE', 'DROP']
+    List<String> commnadListThatObjectMustNotExist = ['CREATE']
 
     //-Mode
     Boolean modeSqlExecute
