@@ -11,7 +11,7 @@ import java.util.jar.JarFile
 class Util {
 
     /*************************
-     * PROGRESS BAR
+     * each PROGRESS BAR
      *************************/
     static boolean eachWithProgressBar(def progressList, int barSize, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
@@ -33,7 +33,7 @@ class Util {
     }
 
     /*************************
-     * PROGRESS BAR with Index
+     * each PROGRESS BAR with Index
      *************************/
     static boolean eachWithIndexAndProgressBar(def progressList, int barSize, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
@@ -55,7 +55,7 @@ class Util {
     }
 
     /*************************
-     * PROGRESS BAR with count
+     * each PROGRESS BAR with count
      *************************/
     static boolean eachWithCountAndProgressBar(def progressList, int barSize, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
@@ -79,7 +79,7 @@ class Util {
 
 
     /*************************
-     * TIME PROGRESS BAR
+     * each TIME PROGRESS BAR
      * 1. You can get parameter made by type of Map, When you use closure.
      *
      * 2. If you wanna print some, then you can add Some String to data.stringList on the closure.
@@ -99,18 +99,20 @@ class Util {
 
     static boolean startTimeProgressBar(def progressList, int barSize, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
-        long startTime = new Date().getTime()
-        List stringList = []
-        Map data = [
-            count:0,
-            item:null,
-            stringList:stringList,
-        ]
-
-        //Print 0%
-        withProgressBar(0, totalSize, barSize)
         //Printer
-        Thread progressBarThread = Util.newThread(''){
+        Map data = startPrinter(totalSize, barSize)
+        //Worker
+        double elapseTime = startWorker(data, eachClosure)
+        return true
+    }
+
+    static Map startPrinter(int totalSize, int barSize){
+        Map data = [
+                count:0, item:null, stringList:[], printerThread:null, startTime:new Date().getTime(), totalSize:totalSize, barSize:barSize
+        ]
+        List stringList = data.stringList
+        long startTime = data.startTime
+        data.printerThread = Util.newThread(''){
             while ( (data.count as int) <= totalSize ){
                 if (stringList){
                     while (stringList){
@@ -125,7 +127,11 @@ class Util {
                 Thread.sleep(100)
             }
         }
+        return data
+    }
 
+    static double startWorker(Map data, Closure eachClosure){
+        double elapseTime
         try{
             //Worker
             eachClosure(data)
@@ -136,20 +142,27 @@ class Util {
 
         }finally{
             //Finisher
-            withTimeProgressBar(data.count, totalSize, barSize, startTime)
-            if (!progressBarThread.isInterrupted())
-                progressBarThread.interrupt()
-            while (progressBarThread.isAlive()){}
+            elapseTime = endWorker(data)
         }
-
-        //End Check Time
-        long endTime = new Date().getTime()
-        double elapseTime = (endTime - startTime) / 1000
-        return true
+        return elapseTime
     }
 
+    static double endWorker(Map data){
+        //Finisher
+        Thread printerThread = data.printerThread
+        withTimeProgressBar(data.totalSize, data.totalSize, data.barSize, data.startTime)
+        if (!printerThread.isInterrupted())
+            printerThread.interrupt()
+        while (printerThread.isAlive()){}
+        //End Check Time
+        long endTime = new Date().getTime()
+        double elapseTime = (endTime - data.startTime) / 1000
+        return elapseTime
+    }
 
-
+    /*************************
+     * Re-print PROGRESS BAR
+     *************************/
     static boolean withProgressBar(int currentCount, int totalSize, int barSize){
         return withProgressBar(currentCount, totalSize, barSize, null)
     }
@@ -173,8 +186,6 @@ class Util {
         Thread.sleep(1)
         return result
     }
-
-
 
     static void printProgressBar(int currentCount, int totalSize, int barSize){
         printProgressBar(currentCount, totalSize, barSize, 0)
@@ -441,7 +452,8 @@ class Util {
             try{
                 threadRunClosure()
             }catch(InterruptedException e){
-                println interruptMessage
+                if (interruptMessage)
+                    println interruptMessage
             }
         }
     }
