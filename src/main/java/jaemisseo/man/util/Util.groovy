@@ -15,69 +15,172 @@ class Util {
      *************************/
     static boolean eachWithProgressBar(def progressList, int barSize, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
+        long startTime = new Date().getTime()
         //Print 0%
         withProgressBar(0, totalSize, barSize)
         //Each
-        progressList.eachWithIndex { Object obj, int i ->
+        progressList.eachWithIndex{ Object obj, int i ->
             int count = i + 1
             //Work
             eachClosure(obj)
             //Re-print
-            withProgressBar(count, totalSize, barSize){
-            }
-        }
-    }
-
-    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, Closure eachClosure){
-        int totalSize = (progressList) ? progressList.size() : 0
-        //Print 0%
-        withProgressBar(0, totalSize, barSize)
-        //Each
-        progressList.eachWithIndex{ Object obj, int i ->
-            int count = i + 1
-            //Work
-            eachClosure(obj, count)
-            //Re-print
-            withProgressBar(count, totalSize, barSize){
-            }
-        }
-    }
-
-    static boolean eachWithCountAndProgressBar(def progressList, int barSize, Closure eachClosure){
-        int totalSize = (progressList) ? progressList.size() : 0
-        //Print 0%
-        withProgressBar(0, totalSize, barSize)
-        //Start Check Time
-        long startTime = new Date().getTime()
-        //Each
-        progressList.eachWithIndex{ Object obj, int i ->
-            int count = i + 1
-            //Work
-            eachClosure(obj, count)
-            //Re-print
-            withProgressBar(count, totalSize, barSize){
-            }
+            withProgressBar(count, totalSize, barSize)
         }
         //End Check Time
         long endTime = new Date().getTime()
-        double howTimeSecond = (endTime - startTime) / 1000
+        double elapseTime = (endTime - startTime) / 1000
+        return true
     }
+
+    /*************************
+     * PROGRESS BAR with Index
+     *************************/
+    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalSize = (progressList) ? progressList.size() : 0
+        long startTime = new Date().getTime()
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Each
+        progressList.eachWithIndex{ Object obj, int i ->
+            int count = i + 1
+            //Work
+            eachClosure(obj, i)
+            //Re-print
+            withProgressBar(count, totalSize, barSize)
+        }
+        //End Check Time
+        long endTime = new Date().getTime()
+        double elapseTime = (endTime - startTime) / 1000
+        return true
+    }
+
+    /*************************
+     * PROGRESS BAR with count
+     *************************/
+    static boolean eachWithCountAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalSize = (progressList) ? progressList.size() : 0
+        long startTime = new Date().getTime()
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Each
+        progressList.eachWithIndex{ Object obj, int i ->
+            int count = i + 1
+            //Work
+            eachClosure(obj, count)
+            //Re-print
+            withProgressBar(count, totalSize, barSize)
+        }
+        //End Check Time
+        long endTime = new Date().getTime()
+        double elapseTime = (endTime - startTime) / 1000
+        return true
+    }
+
+
+
+    /*************************
+     * TIME PROGRESS BAR
+     * 1. You can get parameter made by type of Map, When you use closure.
+     *
+     * 2. If you wanna print some, then you can add Some String to data.stringList on the closure.
+     * - ex)
+     *      data.stringList.add("String you wanna say")
+     *************************/
+    static boolean eachWithTimeProgressBar(def progressList, int barSize, Closure eachClosure){
+        return startTimeProgressBar(progressList, barSize){ data ->
+            progressList.eachWithIndex{ Object obj, int i ->
+                int count = i + 1
+                data.item = obj
+                eachClosure(data)
+                data.count = count
+            }
+        }
+    }
+
+    static boolean startTimeProgressBar(def progressList, int barSize, Closure eachClosure){
+        int totalSize = (progressList) ? progressList.size() : 0
+        long startTime = new Date().getTime()
+        List stringList = []
+        Map data = [
+            count:0,
+            item:null,
+            stringList:stringList,
+        ]
+
+        //Print 0%
+        withProgressBar(0, totalSize, barSize)
+        //Printer
+        Thread progressBarThread = Util.newThread(''){
+            while ( (data.count as int) <= totalSize ){
+                if (stringList){
+                    while (stringList){
+                        Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime){
+                            println stringList[0]
+                            stringList.remove(0)
+                        }
+                    }
+                }else{
+                    Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
+                }
+                Thread.sleep(100)
+            }
+        }
+
+        try{
+            //Worker
+            eachClosure(data)
+
+        }catch(e){
+            e.printStackTrace()
+            throw e
+
+        }finally{
+            //Finisher
+            withTimeProgressBar(data.count, totalSize, barSize, startTime)
+            if (!progressBarThread.isInterrupted())
+                progressBarThread.interrupt()
+            while (progressBarThread.isAlive()){}
+        }
+
+        //End Check Time
+        long endTime = new Date().getTime()
+        double elapseTime = (endTime - startTime) / 1000
+        return true
+    }
+
+
 
     static boolean withProgressBar(int currentCount, int totalSize, int barSize){
         return withProgressBar(currentCount, totalSize, barSize, null)
     }
 
     static boolean withProgressBar(int currentCount, int totalSize, int barSize, Closure progressClosure){
+        return withTimeProgressBar(currentCount, totalSize, barSize, 0, progressClosure)
+    }
+
+    static boolean withTimeProgressBar(int currentCount, int totalSize, int barSize, long startTime){
+        return withTimeProgressBar(currentCount, totalSize, barSize, startTime, null)
+    }
+
+    static boolean withTimeProgressBar(int currentCount, int totalSize, int barSize, long startTime, Closure progressClosure){
         //Clear
         clearProgressBar(barSize)
         //print
         boolean result = (progressClosure) ? progressClosure() : true
         //Print
-        printProgressBar(currentCount, totalSize, barSize)
+        printProgressBar(currentCount, totalSize, barSize, startTime)
+        //Delay
+        Thread.sleep(1)
         return result
     }
 
+
+
     static void printProgressBar(int currentCount, int totalSize, int barSize){
+        printProgressBar(currentCount, totalSize, barSize, 0)
+    }
+
+    static void printProgressBar(int currentCount, int totalSize, int barSize, long startTime){
         //Calculate
         int curCntInBar = (currentCount / totalSize) * barSize
         int curPercent = (currentCount / totalSize) * 100
@@ -92,14 +195,19 @@ class Util {
             print ((curCntInBar..barSize-1).collect{' '}.join('') as String)
 
         //Print Last
-        //End
-        if (curCntInBar >= barSize)
-            print '] DONE  \n'
         // Progressing...
-        else
-            print "] ${curPercent}%"
-        //Delay
-        Thread.sleep(1)
+        print "] ${curPercent}%"
+
+        //Print Time
+        if (startTime){
+            long endTime = new Date().getTime()
+            Integer elapseTime = (endTime - startTime) / 1000
+            print " ${elapseTime}s"
+        }
+
+        //Print Finish
+        if (curCntInBar >= barSize)
+            print ' DONE   \n'
     }
 
     static void clearProgressBar(int barSize){

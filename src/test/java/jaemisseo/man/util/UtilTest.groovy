@@ -1,5 +1,6 @@
 package jaemisseo.man.util
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.experimental.theories.DataPoint
 
@@ -13,6 +14,7 @@ class UtilTest {
 //    static void main(String[] args) {
 //        new UtilTest().progressBar_menually()
 //        new UtilTest().progressBar_automatically()
+//        new UtilTest().progressBar_other_thread()
 //        new UtilTest().newThread()
 //    }
 
@@ -108,6 +110,32 @@ class UtilTest {
                 thread.interrupt()
         }
     }
+
+    /*************************
+     * progressBar other thread
+     *************************/
+    @Test
+    @Ignore
+    void progressBar_other_thread(){
+        List list = [1,2,3,4,5,6,7,8,9,10,111, 112, 113, 114, 115, 116, 117]
+        Map map = [
+            count : 0,
+            startTime : new Date().getTime(),
+            list : list,
+            barSize: 20
+        ]
+
+        Util.eachWithTimeProgressBar(list, 30){ data ->
+            [1000,2000,3000,4000,5000,6000].each{
+                data.stringList.add(data.item + it)
+                Thread.sleep(80)
+            }
+            Thread.sleep(100)
+        }
+
+
+    }
+
 
     /*************************
      * newInstance
