@@ -89,6 +89,7 @@ class Util {
     static boolean eachWithTimeProgressBar(def progressList, int barSize, Closure eachClosure){
         return startTimeProgressBar(progressList, barSize){ data ->
             progressList.eachWithIndex{ Object obj, int i ->
+                Thread.sleep(1)
                 int count = i + 1
                 data.item = obj
                 eachClosure(data)
@@ -113,7 +114,8 @@ class Util {
         List stringList = data.stringList
         long startTime = data.startTime
         data.printerThread = Util.newThread(''){
-            while ( (data.count as int) <= totalSize ){
+            while ( (data.count as int) < totalSize ){
+                //Print String and ProgressBar
                 if (stringList){
                     while (stringList){
                         Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime){
@@ -121,9 +123,11 @@ class Util {
                             stringList.remove(0)
                         }
                     }
+                //Print ProgressBar
                 }else{
                     Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
                 }
+                //Delay
                 Thread.sleep(100)
             }
         }
@@ -136,10 +140,7 @@ class Util {
             //Worker
             eachClosure(data)
 
-        }catch(e){
-            e.printStackTrace()
-            throw e
-
+        }catch(InterruptedException e){
         }finally{
             //Finisher
             elapseTime = endWorker(data)
