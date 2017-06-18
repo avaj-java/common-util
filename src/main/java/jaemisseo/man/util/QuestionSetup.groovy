@@ -16,4 +16,5 @@ class QuestionSetup extends Option<QuestionSetup>{
     Map descriptionMap
     Map valueMap
 
+    Boolean modeLoadResponseFile
 }
