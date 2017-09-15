@@ -14,6 +14,19 @@ class Util {
      * each PROGRESS BAR
      *************************/
     static boolean eachWithProgressBar(def progressList, int barSize, Closure eachClosure){
+        return eachWithProgressBar(progressList, barSize, true, eachClosure)
+    }
+
+    static boolean eachWithProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+        // -Normal Each Mode
+        if (!modeFlag){
+            progressList.each{ def object ->
+                eachClosure(object)
+            }
+            return true
+        }
+
+        // -ProgressBar Each Mode
         int totalSize = (progressList) ? progressList.size() : 0
         long startTime = new Date().getTime()
         //Print 0%
@@ -36,6 +49,19 @@ class Util {
      * each PROGRESS BAR with Index
      *************************/
     static boolean eachWithIndexAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        return eachWithIndexAndProgressBar(progressList, barSize, true, eachClosure)
+    }
+
+    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+        // -Normal Each Mode
+        if (!modeFlag){
+            progressList.eachWithIndex{ def object, int i ->
+                eachClosure(object, i)
+            }
+            return true
+        }
+
+        // -ProgressBar Each Mode
         int totalSize = (progressList) ? progressList.size() : 0
         long startTime = new Date().getTime()
         //Print 0%
@@ -58,6 +84,20 @@ class Util {
      * each PROGRESS BAR with count
      *************************/
     static boolean eachWithCountAndProgressBar(def progressList, int barSize, Closure eachClosure){
+        return eachWithCountAndProgressBar(progressList, barSize, true, eachClosure)
+    }
+
+    static boolean eachWithCountAndProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+        // -Normal Each Mode
+        if (!modeFlag){
+            progressList.eachWithIndex{ def object, int i ->
+                int count = i + 1
+                eachClosure(object, count)
+            }
+            return true
+        }
+
+        // -ProgressBar Each Mode
         int totalSize = (progressList) ? progressList.size() : 0
         long startTime = new Date().getTime()
         //Print 0%
