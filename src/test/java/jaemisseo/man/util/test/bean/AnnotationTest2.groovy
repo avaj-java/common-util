@@ -1,4 +1,4 @@
-package jaemisseo.man.util.test
+package jaemisseo.man.util.test.bean
 
 import org.junit.Before
 import org.junit.Ignore
@@ -14,7 +14,6 @@ import java.lang.annotation.Documented
 /**
  * Created by sujkim on 2017-06-04.
  */
-@ServiceMode
 class AnnotationTest2 {
 
     @Parameterized.Parameter

@@ -1,10 +1,11 @@
 package jaemisseo.man.util
 
+import jaemisseo.man.util.test.annotation.AnnotationTestA
+import jaemisseo.man.util.test.annotation.AnnotationTestB
+import jaemisseo.man.util.test.bean.AnnotationTest1
+import jaemisseo.man.util.test.bean.AnnotationTest3
 import org.junit.Ignore
 import org.junit.Test
-import org.junit.experimental.theories.DataPoint
-
-import javax.jws.soap.SOAPBinding
 
 /**
  * Created by sujkim on 2017-05-31.
@@ -169,7 +170,6 @@ class UtilTest {
      *************************/
     @Test
     void findAllClass(){
-
         println '\n\n///////////////////////// No Condition'
         Util.findAllClasses().each {
            println it
@@ -184,20 +184,14 @@ class UtilTest {
             println it
         }
 
-        println '\n\n///////////////////////// Condition( Package + Annotation )'
-        Util.findAllClasses("jaemisseo.man", SOAPBinding).each{
-            println it
-        }
+        ///////////////////////// Condition( Package + Annotation )
+        assert [AnnotationTest1] == Util.findAllClasses("jaemisseo.man", AnnotationTestA)
 
-        println '\n\n///////////////////////// Condition{ Package + Annotation + Custom }'
-        Util.findAllClasses("jaemisseo.man", SOAPBinding){ return true }.each{
-            println it
-        }
+        ///////////////////////// Condition{ Package + Annotation + Custom }
+        assert [AnnotationTest1] == Util.findAllClasses("jaemisseo.man", AnnotationTestA){ return true }
 
-        println '\n\n///////////////////////// Condition( Package + AnnotationList )'
-        Util.findAllClasses("jaemisseo.man", [DataPoint, SOAPBinding]).each{
-            println it
-        }
+        ///////////////////////// Condition( Package + AnnotationList )
+        assert [AnnotationTest1, AnnotationTest3] == Util.findAllClasses("jaemisseo.man", [AnnotationTestB, AnnotationTestA])
 
         println '\n\n///////////////////////// FInd All Infomation'
         Util.findAllClasses().each { Class clazz ->
