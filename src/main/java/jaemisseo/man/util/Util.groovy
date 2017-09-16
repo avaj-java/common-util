@@ -1,6 +1,5 @@
 package jaemisseo.man.util
 
-import java.lang.annotation.Annotation
 import java.lang.reflect.Constructor
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -17,9 +16,9 @@ class Util {
         return eachWithProgressBar(progressList, barSize, true, eachClosure)
     }
 
-    static boolean eachWithProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+    static boolean eachWithProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
         // -Normal Each Mode
-        if (!modeFlag){
+        if (!modePrint){
             progressList.each{ def object ->
                 eachClosure(object)
             }
@@ -52,9 +51,9 @@ class Util {
         return eachWithIndexAndProgressBar(progressList, barSize, true, eachClosure)
     }
 
-    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+    static boolean eachWithIndexAndProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
         // -Normal Each Mode
-        if (!modeFlag){
+        if (!modePrint){
             progressList.eachWithIndex{ def object, int i ->
                 eachClosure(object, i)
             }
@@ -87,9 +86,9 @@ class Util {
         return eachWithCountAndProgressBar(progressList, barSize, true, eachClosure)
     }
 
-    static boolean eachWithCountAndProgressBar(def progressList, int barSize, boolean modeFlag, Closure eachClosure){
+    static boolean eachWithCountAndProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
         // -Normal Each Mode
-        if (!modeFlag){
+        if (!modePrint){
             progressList.eachWithIndex{ def object, int i ->
                 int count = i + 1
                 eachClosure(object, count)
@@ -126,8 +125,12 @@ class Util {
      * - ex)
      *      data.stringList.add("String you wanna say")
      *************************/
-    static boolean eachWithTimeProgressBar(def progressList, int barSize, Closure eachClosure){
-        return startTimeProgressBar(progressList, barSize){ data ->
+    static double eachWithTimeProgressBar(def progressList, int barSize, Closure eachClosure){
+        return eachWithTimeProgressBar(progressList, barSize, true, eachClosure)
+    }
+
+    static double eachWithTimeProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
+        return startTimeProgressBar(progressList, barSize, modePrint){ data ->
             progressList.eachWithIndex{ Object obj, int i ->
                 Thread.sleep(1)
                 int count = i + 1
@@ -138,39 +141,53 @@ class Util {
         }
     }
 
-    static boolean startTimeProgressBar(def progressList, int barSize, Closure eachClosure){
+
+
+    static double startTimeProgressBar(def progressList, int barSize, Closure eachClosure){
+        return startTimeProgressBar(progressList, barSize, true, eachClosure)
+    }
+
+    static double startTimeProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
         int totalSize = (progressList) ? progressList.size() : 0
         //Printer
-        Map data = startPrinter(totalSize, barSize)
+        Map data = startPrinter(totalSize, barSize, modePrint)
         //Worker
         double elapseTime = startWorker(data, eachClosure)
-        return true
+        return elapseTime
     }
 
     static Map startPrinter(int totalSize, int barSize){
+        return startPrinter(totalSize, barSize, true)
+    }
+
+    static Map startPrinter(int totalSize, int barSize, boolean modePrint){
         Map data = [
-                count:0, item:null, stringList:[], printerThread:null, startTime:new Date().getTime(), totalSize:totalSize, barSize:barSize
+                count:0, item:null, stringList:[], printerThread:null, startTime:new Date().getTime(), totalSize:totalSize, barSize:barSize, modePrint:modePrint
         ]
         List stringList = data.stringList
         long startTime = data.startTime
+
         data.printerThread = Util.newThread(''){
             while ( (data.count as int) < totalSize ){
-                //Print String and ProgressBar
-                if (stringList){
-                    while (stringList){
-                        Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime){
-                            println stringList[0]
-                            stringList.remove(0)
+                if (modePrint) {
+                    //Print String and ProgressBar
+                    if (stringList) {
+                        while (stringList) {
+                            Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime) {
+                                println stringList[0]
+                                stringList.remove(0)
+                            }
                         }
+                        //Print ProgressBar
+                    } else {
+                        Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
                     }
-                //Print ProgressBar
-                }else{
-                    Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
                 }
                 //Delay
                 Thread.sleep(100)
             }
         }
+
         return data
     }
 
@@ -191,10 +208,12 @@ class Util {
     static double endWorker(Map data){
         //Finisher
         Thread printerThread = data.printerThread
-        withTimeProgressBar(data.totalSize, data.totalSize, data.barSize, data.startTime)
-        if (!printerThread.isInterrupted())
-            printerThread.interrupt()
-        while (printerThread.isAlive()){}
+        if (printerThread){
+            withTimeProgressBar(data.totalSize, data.totalSize, data.barSize, data.startTime)
+            if (!printerThread.isInterrupted())
+                printerThread.interrupt()
+            while (printerThread.isAlive()){}
+        }
         //End Check Time
         long endTime = new Date().getTime()
         double elapseTime = (endTime - data.startTime) / 1000

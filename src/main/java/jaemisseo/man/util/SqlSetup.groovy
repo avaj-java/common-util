@@ -35,9 +35,9 @@ class SqlSetup extends Option<SqlSetup>{
     Boolean modeSqlExecute
     Boolean modeSqlCheckBefore
     Boolean modeSqlFileGenerate
+    Boolean modeSqlProgressBar = true
 
     Boolean modeSqlIgnoreErrorExecute
     Boolean modeSqlIgnoreErrorCheckBefore
-
 
 }
