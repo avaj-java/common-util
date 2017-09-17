@@ -240,8 +240,6 @@ class UtilTest {
         assert Util.find([a:null, b:2], [a:'']) != [a:null, b:2]
         assert Util.find([a:'', b:2], [a:'']) != [a:null, b:2]
         assert Util.find([a:'', b:2], [a:null]) != [a:null, b:2]
-
-        assert Util.find(['build.meta'], 'build.meta') == ['build.meta']
     }
 
 }
