@@ -329,16 +329,19 @@ class Util {
                 return closure(object, condition)
             }else{
                 for (String key : (condition as Map).keySet()){
-                    String attributeValue = object[key]
+                    def attributeValue = object[key]
                     def conditionValue = condition[key]
-                    if (attributeValue){
-                        if (conditionValue instanceof String && attributeValue == conditionValue){
-                        }else if (conditionValue instanceof List && conditionValue.contains(attributeValue)){
+                    if (attributeValue != null){
+                        if (conditionValue instanceof List && conditionValue.contains(attributeValue)){
+                        }else if (attributeValue == conditionValue){
+                        }else{
+                            return //nothing
+                        }
+                    }else{
+                        if (attributeValue == conditionValue){
                         }else{
                             return //No Matching
                         }
-                    }else{
-                        return //No Matching
                     }
                 }
                 return object

@@ -22,7 +22,7 @@ class UtilTest {
 
 
 
-    
+
     /*************************
      * < README >
      * it can't show progressBar on IntelliJ (DevelopmentTool)
@@ -158,7 +158,7 @@ class UtilTest {
         pathList.each{ println it }
 
         println "/////"
-        
+
         List<Class<?>> pathList2 = Util.findAllSourcePathByPackageName("jaemisseo.man")
         pathList2.each{ println it }
 
@@ -203,6 +203,45 @@ class UtilTest {
             println clazz.getDeclaredMethods()
             println '===== ===== ===== ===== ===== ===== ====='
         }
+    }
+
+
+
+    /*************************
+     * findObject
+     *************************/
+    @Test
+    void findObject(){
+        assert ('true' == false) == false
+        assert ('true' == true) == false
+        assert ('' == false) == false
+        assert (null == false) == false
+
+        assert Util.find([[a:'true', b:false]], [a:'true']) == [[a:'true', b:false]]
+        assert Util.find([[a:true, b:false]], [a:'true']) == []
+        assert Util.find([[a:true, b:false]], [a:true]) == [[a:true, b:false]]
+
+        assert Util.find([a:'true', b:false], [a:'true']) == [a:'true', b:false]
+        assert Util.find([a:true, b:false], [a:'true']) == null
+        assert Util.find([a:true, b:false], [a:true]) == [a:true, b:false]
+
+        assert Util.find([a:1, b:2], [a:'1']) == null
+        assert Util.find([a:1, b:2], [a:1]) == [a:1, b:2]
+        assert Util.find([a:1, b:2], [a:false]) == null
+
+        assert Util.find([a:null, b:2], [a:null]) == [a:null, b:2]
+        assert Util.find([a:'null', b:2], [a:'null']) == [a:'null', b:2]
+        assert Util.find([a:'null', b:2], [a:null]) != [a:'null', b:2]
+        assert Util.find([a:null, b:2], [a:'null']) != [a:null, b:2]
+
+        assert '' != null
+        assert null != ''
+
+        assert Util.find([a:null, b:2], [a:'']) != [a:null, b:2]
+        assert Util.find([a:'', b:2], [a:'']) != [a:null, b:2]
+        assert Util.find([a:'', b:2], [a:null]) != [a:null, b:2]
+
+        assert Util.find(['build.meta'], 'build.meta') == ['build.meta']
     }
 
 }
