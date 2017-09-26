@@ -16,7 +16,7 @@ class SqlSetup extends Option<SqlSetup>{
     String driver
 
     //-Replacement
-    def replace
+    def replaceAll
     def replaceTable
     def replaceIndex
     def replaceSequence
