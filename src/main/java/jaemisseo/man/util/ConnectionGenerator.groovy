@@ -17,19 +17,19 @@ class ConnectionGenerator {
 
         static final String ORACLE = "ORACLE"
         static final String TIBERO = "TIBERO"
-        String vendor, id, pw, ip, port, db, url, driver
+        String vendor, user, password, ip, port, db, url, driver
 
 
 
     ConnectionGenerator init() {
-        vendor = null; id = null; pw = null; ip = null; port = null; db = null; url = null; driver = null;
+        vendor = null; user = null; password = null; ip = null; port = null; db = null; url = null; driver = null;
         return this
     }
 
     ConnectionGenerator setDatasource(Map map) {
         vendor  = map['vendor']
-        id      = map['id']
-        pw      = map['pw']
+        user    = map['user']
+        password = map['password']
         ip      = map['ip']
         port    = map['port']
         db      = map['db']
@@ -41,8 +41,8 @@ class ConnectionGenerator {
     Map<String, String> generateDataBaseInfoMap(){
         Map o = [
             vendor  : vendor ?: ORACLE,
-            id      : id,
-            pw      : pw,
+            user    : user,
+            password: password,
             ip      : ip ?: "127.0.0.1",
             port    : port ?: "1521",
             db      : db ?: "orcl",
@@ -60,7 +60,7 @@ class ConnectionGenerator {
     Connection generate(){
         Sql sql
         Map<String, String> m = generateDataBaseInfoMap()
-        sql = Sql.newInstance(m.url, m.id, m.pw, m.driver)
+        sql = Sql.newInstance(m.url, m.user, m.password, m.driver)
         return sql.getConnection()
     }
 
