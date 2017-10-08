@@ -1,9 +1,11 @@
-package jaemisseo.man.util
+package jaemisseo.man.bean
+
+import jaemisseo.man.util.Option
 
 /**
  * Created by sujkim on 2017-03-17.
  */
-class SqlSetup extends Option<SqlSetup>{
+class SqlSetup extends Option<SqlSetup> {
 
     //-DataSource
     String vendor
@@ -35,9 +37,8 @@ class SqlSetup extends Option<SqlSetup>{
     Boolean modeSqlExecute
     Boolean modeSqlCheckBefore
     Boolean modeSqlFileGenerate
-    Boolean modeSqlProgressBar = true
-
     Boolean modeSqlIgnoreErrorExecute
     Boolean modeSqlIgnoreErrorCheckBefore
+    Boolean modeSqlProgressBar = true
 
 }

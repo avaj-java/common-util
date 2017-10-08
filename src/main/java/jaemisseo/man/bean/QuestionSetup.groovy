@@ -1,20 +1,20 @@
-package jaemisseo.man.util
+package jaemisseo.man.bean
+
+import jaemisseo.man.util.Option
 
 /**
  * Created by sujkim on 2017-03-18.
  */
-class QuestionSetup extends Option<QuestionSetup>{
+class QuestionSetup extends Option<QuestionSetup> {
 
     String question
     String answer
     String recommandAnswer
     String validation       //Not Supported Yet
-    Boolean modeOnlyInteractive
-
-    Integer repeatLimit = 1
-
     Map descriptionMap
     Map valueMap
+    Integer repeatLimit = 1
 
+    Boolean modeOnlyInteractive
     Boolean modeLoadResponseFile
 }
