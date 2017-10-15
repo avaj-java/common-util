@@ -181,7 +181,7 @@ class Util {
                 if (stringList) {
                     while (stringList) {
                         Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime) {
-                            logger.debug stringList[0]
+                            logger.info stringList[0]
                             stringList.remove(0)
                         }
                     }
