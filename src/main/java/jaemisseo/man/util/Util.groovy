@@ -1,5 +1,8 @@
 package jaemisseo.man.util
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import java.lang.reflect.Constructor
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -8,6 +11,8 @@ import java.util.jar.JarFile
  * Created by sujkim on 2017-05-29.
  */
 class Util {
+
+    final static Logger logger = LoggerFactory.getLogger(Util.getClass());
 
     /*************************
      * each PROGRESS BAR
@@ -167,27 +172,27 @@ class Util {
         List stringList = data.stringList
         long startTime = data.startTime
 
+        if (!modePrint)
+            return data
+
         data.printerThread = Util.newThread(''){
             while ( (data.count as int) < totalSize ){
-                if (modePrint) {
-                    //Print String and ProgressBar
-                    if (stringList) {
-                        while (stringList) {
-                            Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime) {
-                                println stringList[0]
-                                stringList.remove(0)
-                            }
+                //Print String and ProgressBar
+                if (stringList) {
+                    while (stringList) {
+                        Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime) {
+                            logger.debug stringList[0]
+                            stringList.remove(0)
                         }
-                        //Print ProgressBar
-                    } else {
-                        Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
                     }
+                    //Print ProgressBar
+                } else {
+                    Util.withTimeProgressBar(data.count as int, totalSize, barSize, startTime)
                 }
                 //Delay
                 Thread.sleep(100)
             }
         }
-
         return data
     }
 
@@ -516,7 +521,7 @@ class Util {
                 threadRunClosure()
             }catch(InterruptedException e){
                 if (interruptMessage)
-                    println interruptMessage
+                    logger.error interruptMessage
             }
         }
     }
