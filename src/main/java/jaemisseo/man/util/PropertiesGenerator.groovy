@@ -12,40 +12,52 @@ class PropertiesGenerator {
      * @param args
      * @return
      */
-    Map genValueListMap(String[] args){
-        Map valueListMap = [:]
+    Map genPropertyValueMap(String[] args){
+        Map propertyValueMap = [
+            ''      : [],
+            '--'    : []
+        ]
         //Generate Value Listing Map (Key starts with '-')
         if (args){
             String nowKey = ''
 
             args.each{
                 it = it.replaceAll('\\^\\*', '\\*')         // Command Line(GitBash) Asterik Issue..  no use *, use ^*
-                //COMMAND1: -PROPERTY.KEY.NAME=VALUE
-                //RESULT2: valueListMap['PROPERTY.KEY.NAME'] = VALUE
-                if (it.startsWith('-')){
+
+                //OPTION: --VALUE
+                //RESULT: propertyValueMap['--'] = [VALUE1, VALUE2...]
+                if (it.startsWith('--')){
+                    if (!propertyValueMap['--'])
+                        propertyValueMap['--'] = []
+                    String value = it.substring(2, it.length())
+                    propertyValueMap['--'] << value
+
+                //OPTION: -PROPERTY.KEY.NAME=VALUE
+                //RESULT: propertyValueMap['PROPERTY.KEY.NAME'] = VALUE
+                }else if (it.startsWith('-')){
                     int indexEqualMark = it.indexOf('=')
                     if (indexEqualMark != -1){
                         String beforeEqualMark = (it.startsWith('-')) ? it.substring(1, indexEqualMark) : ''
                         def afterEqualMark = it.substring(indexEqualMark + 1)
-                        valueListMap[beforeEqualMark] = afterEqualMark ?: ''
+                        propertyValueMap[beforeEqualMark] = afterEqualMark ?: ''
                         nowKey = ''
                     }else {
                         nowKey = it.substring(1, it.length())
-                        if (!valueListMap[nowKey])
-                            valueListMap[nowKey] = valueListMap[nowKey] ?: []
+                        if (!propertyValueMap[nowKey])
+                            propertyValueMap[nowKey] = []
                     }
 
-                //COMMAND2: -PROPERTY.KEY.NAME VALUE1 VALUE2 ...
-                //RESULT2: valueListMap['PROPERTY.KEY.NAME'] = [VALUE1, VALUE2, ...]
+                //OPTION: -PROPERTY.KEY.NAME VALUE1 VALUE2 ...
+                //RESULT: propertyValueMap['PROPERTY.KEY.NAME'] = [VALUE1, VALUE2, ...]
                 }else{
-                    if (!valueListMap[nowKey])
-                        valueListMap[nowKey] = []
-                    valueListMap[nowKey] << it
+                    if (!propertyValueMap[nowKey])
+                        propertyValueMap[nowKey] = []
+                    propertyValueMap[nowKey] << it
                 }
             }
 
         }
-        return valueListMap
+        return propertyValueMap
     }
 
 }
