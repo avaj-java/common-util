@@ -1,5 +1,7 @@
 package jaemisseo.man.bean
 
+import groovy.sql.Sql
+import jaemisseo.man.util.ConnectionGenerator
 import jaemisseo.man.util.Option
 
 /**
@@ -41,5 +43,18 @@ class SqlSetup extends Option<SqlSetup> {
     Boolean modeSqlIgnoreErrorAlreadyExist
     Boolean modeSqlIgnoreErrorCheckBefore
     Boolean modeSqlProgressBar = true
+
+
+    SqlSetup setup(){
+        ConnectionGenerator conGen = new ConnectionGenerator(this)
+        url = conGen.url
+        driver = conGen.driver
+        return this
+    }
+
+    Sql generateSqlInstance(){
+        ConnectionGenerator conGen = new ConnectionGenerator(this)
+        return conGen.generateSqlInstance()
+    }
 
 }

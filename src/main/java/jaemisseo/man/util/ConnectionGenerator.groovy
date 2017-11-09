@@ -1,6 +1,7 @@
 package jaemisseo.man.util
 
 import groovy.sql.Sql
+import jaemisseo.man.bean.SqlSetup
 
 import java.sql.Connection
 
@@ -13,6 +14,10 @@ class ConnectionGenerator {
 
     ConnectionGenerator(Map<String, String> map){
         setDatasource(map)
+    }
+
+    ConnectionGenerator(SqlSetup sqlSetup){
+        setDatasource(sqlSetup)
     }
 
         static final String ORACLE = "ORACLE"
@@ -38,6 +43,18 @@ class ConnectionGenerator {
         return this
     }
 
+    ConnectionGenerator setDatasource(SqlSetup sqlOpt) {
+        vendor  = sqlOpt.vendor
+        user    = sqlOpt.user
+        password = sqlOpt.password
+        ip      = sqlOpt.ip
+        port    = sqlOpt.port
+        db      = sqlOpt.db
+        url     = sqlOpt.url
+        driver  = sqlOpt.driver
+        return this
+    }
+
     Map<String, String> generateDataBaseInfoMap(){
         Map o = [
             vendor  : vendor ?: ORACLE,
@@ -47,9 +64,15 @@ class ConnectionGenerator {
             port    : port ?: "1521",
             db      : db ?: "orcl",
         ]
-        o['url']    = url ?: "${getURLProtocol(o.vendor)}@${o.ip}:${o.port}:${o.db}"
+        o['url']    = url ?: getURLProtocol(o.vendor, o.ip, o.port, o.db)
         o['driver'] = driver ?: getDriverName(o.vendor)
         return o
+    }
+
+    ConnectionGenerator setup(){
+        url = url ?: "${getURLProtocol(vendor)}@${ip}:${port}:${db}"
+        driver = driver ?: getDriverName(vendor)
+        return this
     }
 
     Connection generate(Map map){
@@ -58,30 +81,45 @@ class ConnectionGenerator {
     }
 
     Connection generate(){
-        Sql sql
-        Map<String, String> m = generateDataBaseInfoMap()
-        sql = Sql.newInstance(m.url, m.user, m.password, m.driver)
+        Sql sql = generateSqlInstance()
         return sql.getConnection()
     }
 
+    Sql generateSqlInstance(){
+        Map<String, String> map = generateDataBaseInfoMap()
+        return Sql.newInstance(map.url, map.user, map.password, map.driver)
+    }
+
     String getDriverName(String vendor){
-        vendor = (vendor) ?: ORACLE
-        vendor = vendor?.toUpperCase()
-        String driver = ''
-        //Get By Vendor
-        if (vendor.equals(ORACLE)) driver = 'oracle.jdbc.driver.OracleDriver'
-        else if (vendor.equals(TIBERO)) driver = 'com.tmax.tibero.jdbc.TbDriver'
+        String driver
+        switch (vendor?.toUpperCase()) {
+            case ORACLE:
+                driver = "oracle.jdbc.driver.OracleDriver"
+                break
+            case TIBERO:
+                driver = "com.tmax.tibero.jdbc.TbDriver"
+                break
+            default:
+                driver = "oracle.jdbc.driver.OracleDriver"
+                break
+        }
         return driver
     }
 
-    String getURLProtocol(String vendor){
-        vendor = (vendor) ?: ORACLE
-        vendor = vendor?.toUpperCase()
-        String URLProtocol = ''
-        //Get By Vendor
-        if (vendor.equals(ORACLE)) URLProtocol = 'jdbc:oracle:thin:'
-        else if (vendor.equals(TIBERO)) URLProtocol = 'jdbc:tibero:thin:'
-        return URLProtocol
+    String getURLProtocol(String vendor, String ip, String port, String db){
+        String url
+        switch (vendor?.toUpperCase()) {
+            case ORACLE:
+                url = "jdbc:oracle:thin:@${ip}:${port}:${db}"
+                break
+            case TIBERO:
+                url = "jdbc:tibero:thin:@${ip}:${port}:${db}"
+                break
+            default:
+                url = "jdbc:oracle:thin:@${ip}:${port}:${db}"
+                break
+        }
+        return url
     }
 
 }
