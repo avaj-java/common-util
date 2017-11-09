@@ -318,6 +318,10 @@ class Util {
         return [:]
     }
 
+    static def getMatchedObject(def object, def condition){
+        return getMatchedObject(object, condition, null)
+    }
+
     static def getMatchedObject(def object, def condition, Closure closure){
         if (condition instanceof String){
             condition = [id:condition]
@@ -336,17 +340,37 @@ class Util {
                 for (String key : (condition as Map).keySet()){
                     def attributeValue = object[key]
                     def conditionValue = condition[key]
-                    if (attributeValue != null){
-                        if (conditionValue instanceof List && conditionValue.contains(attributeValue)){
-                        }else if (attributeValue == conditionValue){
-                        }else{
-                            return //nothing
+                    if (attributeValue) {
+                        /**{"attribute":["value1","value2"]} **/
+                        if (attributeValue instanceof List) {
+                            //{"conditionAttribute":["value1","value2"]}
+                            if (conditionValue instanceof List) {
+                                if (!attributeValue.findAll { (conditionValue as List).contains(it) })
+                                    return //No Matching
+
+                                //{"conditionAttribute": ... }
+                            } else {
+                                if (!attributeValue.findAll { it == conditionValue })
+                                    return //No Matching
+                            }
+
+                            /**{"attribute": ... } **/
+                        } else {
+                            //{"conditionAttribute":["value1","value2"]}
+                            if (conditionValue instanceof List) {
+                                if (!conditionValue.contains(attributeValue))
+                                    return //No Matching
+
+                                //{"conditionAttribute": ... }
+                            } else {
+                                if (attributeValue != conditionValue)
+                                    return //No Matching
+                            }
                         }
-                    }else{
-                        if (attributeValue == conditionValue){
-                        }else{
+
+                    } else {
+                        if (attributeValue != conditionValue)
                             return //No Matching
-                        }
                     }
                 }
                 return object
