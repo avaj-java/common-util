@@ -11,6 +11,7 @@ class FileSetup extends Option<FileSetup> {
     String encoding = 'utf-8'
     String lineBreak
     String lastLineBreak = ''
+    String chmod = ''
     String backupPath
 
     Boolean modeAutoMkdir = false
