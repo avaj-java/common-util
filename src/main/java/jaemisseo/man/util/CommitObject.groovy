@@ -3,14 +3,24 @@ package jaemisseo.man.util
 /**
  * Created by sujung on 2017-04-12.
  */
-class UndoPropertiesObject {
+class CommitObject {
+
+    String id
+
+    CommitObject parent
+    CommitObject child
+    Map customData = [:]
 
     Map insertedMap
     Map updatedBeforeMap
     Map updatedAfterMap
     Map deletedMap
 
-    UndoPropertiesObject gap(Map old, Map now){
+    CommitObject(String id){
+        this.id = id
+    }
+
+    CommitObject gap(Map old, Map now){
         insertedMap = now.findAll{ !old.containsKey(it.key) }
         deletedMap = old.findAll{ !now.containsKey(it.key) }
         updatedBeforeMap = old.findAll{ now.containsKey(it.key) && now[it.key] != old[it.key]  }
