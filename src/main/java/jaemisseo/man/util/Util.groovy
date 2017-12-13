@@ -616,4 +616,42 @@ class Util {
         return (stringItem.length() < bestLongerLength) ? (1..(bestLongerLength - stringItem.length())).collect{' '}.join('') : ''
     }
 
+    static String multiTrim(String content){
+        //- Remove Shortest Left Indent
+        Integer shortestIndentIndex = 0
+        List<String> stringList = content.split('\n').toList()
+        List<String> resultStringList = stringList.findAll{
+            List charList = it.toList()
+            if (charList.count(" ") != charList.size()){
+                int indentIndex = 0
+                for (int i=0; i<charList.size(); i++){
+                    if (charList[i] != " "){
+                        indentIndex = i
+                        break
+                    }
+                }
+                if (indentIndex >= 0){
+                    if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
+                        shortestIndentIndex =  indentIndex
+                    }
+                }
+            }
+            return true
+        }
+        //- Remove Empty Top and Bottom
+        Integer startRowIndex
+        Integer endRowIndex
+        resultStringList.eachWithIndex{ String row, int index ->
+            String line = row.trim()
+            if (line && startRowIndex == null)
+                startRowIndex = index
+            if (line)
+                endRowIndex = index
+        }
+        resultStringList = resultStringList[startRowIndex..endRowIndex]
+        String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
+        return resultString
+    }
+
+
 }
