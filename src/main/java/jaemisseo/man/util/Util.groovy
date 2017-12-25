@@ -135,17 +135,47 @@ class Util {
     }
 
     static double eachWithTimeProgressBar(def progressList, int barSize, boolean modePrint, Closure eachClosure){
-        return startTimeProgressBar(progressList, barSize, modePrint){ data ->
+        return startTimeProgressBar(progressList, barSize, modePrint){ Map data ->
+            int count = 0
             progressList.eachWithIndex{ Object obj, int i ->
                 Thread.sleep(1)
-                int count = i + 1
+                count = i + 1
                 data.item = obj
-                eachClosure(data)
                 data.count = count
+                eachClosure(data)
             }
         }
     }
 
+    /*************************
+     * while TIME PROGRESS BAR
+     * 1. You can get parameter made by type of Map, When you use closure.
+     *
+     * 2. If you wanna print some, then you can add Some String to data.stringList on the closure.
+     * - ex)
+     *      data.stringList.add("String you wanna say")
+     *************************/
+    static double whileWithTimeProgressBar(int second, int barSize, Closure eachClosure){
+        return whileWithTimeProgressBar(second, barSize, true, eachClosure)
+    }
+
+    static double whileWithTimeProgressBar(int sencond, int barSize, boolean modePrint, Closure eachClosure){
+        List progressItemList = (0..(sencond-1))
+        return startTimeProgressBar(progressItemList, barSize, modePrint){ Map data ->
+            int count = 0
+            double elapsedSecond = 0
+            while(true){
+                Thread.sleep(1)
+                elapsedSecond = ((new Date().getTime() - data.startTime) / 1000)
+                data.item = elapsedSecond
+                data.count = elapsedSecond as int
+                if (elapsedSecond > sencond)
+                    break
+                if (eachClosure(data))
+                    break
+            }
+        }
+    }
 
 
     static double startTimeProgressBar(def progressList, int barSize, Closure eachClosure){
@@ -214,7 +244,7 @@ class Util {
         //Finisher
         Thread printerThread = data.printerThread
         if (printerThread){
-            withTimeProgressBar(data.totalSize, data.totalSize, data.barSize, data.startTime)
+            withTimeProgressBar(data.count, data.totalSize, data.barSize, data.startTime)
             if (!printerThread.isInterrupted())
                 printerThread.interrupt()
             while (printerThread.isAlive()){}

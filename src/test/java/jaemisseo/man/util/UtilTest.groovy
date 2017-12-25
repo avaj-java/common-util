@@ -92,6 +92,22 @@ class UtilTest {
         }
     }
 
+    @Test
+    @Ignore
+    void while_timeProgressBar_automatically(){
+        //Data Setup
+        int total = 10
+        int barSize = 30
+
+        //Just Work
+        Util.whileWithTimeProgressBar(total, barSize){ it->
+            if (it.count == 5)
+                return true
+            Thread.sleep(80)
+        }
+
+    }
+
     /*************************
      * newThread
      *************************/
