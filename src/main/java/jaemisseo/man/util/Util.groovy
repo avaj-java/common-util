@@ -648,7 +648,7 @@ class Util {
 
     static String multiTrim(String content){
         //- Remove Shortest Left Indent
-        Integer shortestIndentIndex = 0
+        Integer shortestIndentIndex = -1
         List<String> stringList = content.split('\n').toList()
         List<String> resultStringList = stringList.findAll{
             List charList = it.toList()
@@ -661,7 +661,7 @@ class Util {
                     }
                 }
                 if (indentIndex >= 0){
-                    if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
+                    if (shortestIndentIndex == -1 || shortestIndentIndex > indentIndex){
                         shortestIndentIndex =  indentIndex
                     }
                 }
@@ -679,7 +679,9 @@ class Util {
                 endRowIndex = index
         }
         resultStringList = resultStringList[startRowIndex..endRowIndex]
-        String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
+        String resultString = resultStringList.collect{
+            return (it) ? it.substring(shortestIndentIndex) : it
+        }.join('\n')
         return resultString
     }
 
