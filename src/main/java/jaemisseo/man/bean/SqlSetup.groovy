@@ -42,7 +42,7 @@ class SqlSetup extends Option<SqlSetup> {
     Boolean modeSqlIgnoreErrorExecute
     Boolean modeSqlIgnoreErrorAlreadyExist
     Boolean modeSqlIgnoreErrorCheckBefore
-    Boolean modeSqlProgressBar = true
+    Boolean modeProgressBar = true
 
 
     SqlSetup setup(){
