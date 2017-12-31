@@ -206,7 +206,8 @@ class Util {
             return data
 
         data.printerThread = Util.newThread(''){
-            while ( (data.count as int) < totalSize ){
+//            while ( (data.count as int) < totalSize ){
+            while (true){
                 //Print String and ProgressBar
                 if (stringList) {
                     while (stringList) {
@@ -236,6 +237,7 @@ class Util {
         }finally{
             //Finisher
             elapseTime = endWorker(data)
+            print ' DONE \n'
         }
         return elapseTime
     }
@@ -244,6 +246,7 @@ class Util {
         //Finisher
         Thread printerThread = data.printerThread
         if (printerThread){
+            while (data.stringList){}
             withTimeProgressBar(data.count, data.totalSize, data.barSize, data.startTime)
             if (!printerThread.isInterrupted())
                 printerThread.interrupt()
@@ -312,8 +315,8 @@ class Util {
         }
 
         //Print Finish
-        if (curCntInBar >= barSize)
-            print ' DONE   \n'
+//        if (curCntInBar >= barSize)
+//            print ' DONE   \n'
     }
 
     static void clearProgressBar(int barSize){
