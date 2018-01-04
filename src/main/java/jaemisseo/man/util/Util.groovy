@@ -237,7 +237,6 @@ class Util {
         }finally{
             //Finisher
             elapseTime = endWorker(data)
-            print ' DONE \n'
         }
         return elapseTime
     }
@@ -252,6 +251,7 @@ class Util {
                 printerThread.interrupt()
             while (printerThread.isAlive()){}
         }
+        print ' DONE \n'
         //End Check Time
         long endTime = new Date().getTime()
         double elapseTime = (endTime - data.startTime) / 1000
