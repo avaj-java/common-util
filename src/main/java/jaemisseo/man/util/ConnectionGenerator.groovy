@@ -2,6 +2,8 @@ package jaemisseo.man.util
 
 import groovy.sql.Sql
 import jaemisseo.man.bean.SqlSetup
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.sql.Connection
 
@@ -9,6 +11,9 @@ import java.sql.Connection
  * Created by sujkim on 2017-02-19.
  */
 class ConnectionGenerator{
+
+    //Logger
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     ConnectionGenerator(){}
 
@@ -78,12 +83,18 @@ class ConnectionGenerator{
         ]
         o['url']    = url ?: getURLProtocol(o.vendor, o.ip, o.port, o.db)
         o['driver'] = driver ?: getDriverName(o.vendor)
+        logger.debug(o.toMapString())
         return o
     }
 
     Connection generate(Map map){
         setDatasource(map)
         return generate()
+    }
+
+    static Connection generateByMap(Map map){
+        ConnectionGenerator conGenerator = new ConnectionGenerator().setDatasource(map)
+        return conGenerator.generate()
     }
 
     Connection generate(){
@@ -140,7 +151,7 @@ class ConnectionGenerator{
                 URLProtocol = "jdbc:tibero:thin:@${ip}:${port}:${db}"
                 break
             case MYSQL:
-                URLProtocol = "jdbc:mysql:${ip}:${port}:${db}"
+                URLProtocol = "jdbc:mysql://${ip}:${port}/${db}"
                 break
             case MSSQL:
                 URLProtocol = "jdbc:sqlserver:${ip}:${port}:${db}"
@@ -163,4 +174,5 @@ class ConnectionGenerator{
         }
         return URLProtocol
     }
+
 }
