@@ -141,8 +141,8 @@ class Util {
                 Thread.sleep(1)
                 count = i + 1
                 data.item = obj
-                data.count = count
                 eachClosure(data)
+                data.count = count
             }
         }
     }
