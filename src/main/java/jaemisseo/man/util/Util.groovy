@@ -650,6 +650,10 @@ class Util {
     }
 
     static String multiTrim(String content){
+        return multiTrim(content, 0)
+    }
+
+    static String multiTrim(String content, int addLeftIndent){
         //- Remove Shortest Left Indent
         Integer shortestIndentIndex = -1
         List<String> stringList = content.split('\n').toList()
@@ -682,8 +686,13 @@ class Util {
                 endRowIndex = index
         }
         resultStringList = resultStringList[startRowIndex..endRowIndex]
+
+        //Setup Add Left Indent
+        String leftIndentString = (addLeftIndent) ? ((1..addLeftIndent).collect{ '' }.join(' ') + ' ') : ''
+
+        //Result String
         String resultString = resultStringList.collect{
-            return (it) ? it.substring(shortestIndentIndex) : it
+            return (it) ? (leftIndentString + it.substring(shortestIndentIndex)) : it
         }.join('\n')
         return resultString
     }
