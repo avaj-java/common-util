@@ -427,7 +427,7 @@ class Util {
     static List<String> findAllSourcePath(String sourcePath){
         List<String> resultList = []
         List<URL> urlList = Thread.currentThread().getContextClassLoader().getResources(sourcePath).toList()
-        List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()
+        List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('/').toList()
         urlList.each{ url ->
             if (url.protocol == 'jar'){
                 String jarPath = url.getPath().substring(5, url.getPath().indexOf("!")) //strip out only the JAR file
@@ -524,8 +524,23 @@ class Util {
             //replace / => .
             if (entityRelpath.endsWith('.class')){
                 String classpath = entityRelpath.substring(0, entityRelpath.length() - 6).replaceAll(/[\/\\]+/, '.')
-                Class clazz = Class.forName(classpath)
-                clazzList << clazz
+                try{
+                    logger.trace(classpath)
+                    Class clazz = Class.forName(classpath)
+                    clazzList << clazz
+                }catch(ExceptionInInitializerError eiie){
+                    logger.error(classpath, eiie)
+                }catch(NoClassDefFoundError ncdfe) {
+                    logger.error(classpath, ncdfe)
+                }catch(UnsupportedClassVersionError ucve){
+                    logger.error(classpath, ucve)
+                }catch(UnsatisfiedLinkError ule){
+                    logger.error(classpath, ule)
+                }catch(InternalError ie){
+                    logger.error(classpath, ie)
+                }catch(Exception e){
+                    logger.error(classpath, e)
+                }
             }
         }
         if (closure)
@@ -539,7 +554,14 @@ class Util {
 
     static List<Class> findAllClasses(String packageName, List<Class> annotationList, Closure closure) throws ClassNotFoundException, IOException {
         List<Class> clazzList = findAllClasses(packageName){ Class clazz ->
-            return clazz.getAnnotations().findAll{ annotationList.contains(it.annotationType()) }
+            try{
+                return clazz.getAnnotations().findAll{ annotationList.contains(it.annotationType()) }
+            }catch(NoClassDefFoundError ncdfe){
+                logger.error(clazz.toString(), ncdfe)
+            }catch(Exception e){
+                logger.error(clazz.toString(), e)
+                return false
+            }
         }
         if (closure)
             clazzList = clazzList.findAll{ closure(it) }
@@ -550,6 +572,8 @@ class Util {
         // Validate - Only Instance Makable Class
         try{
             Util.newInstance(clazz.getName())
+        }catch(NoClassDefFoundError ncdfe){
+            return false
         }catch(e){
             return false
         }
@@ -697,5 +721,51 @@ class Util {
         return resultString
     }
 
+
+
+    /*************************
+     * ID
+     *************************/
+    static String makeVMID(){
+        return new java.rmi.dgc.VMID()
+    }
+
+    static String makeReplacedVMID(){
+        String id
+        try{
+            id = new java.rmi.dgc.VMID()
+            id = id?.replaceAll("[^0-9.]", "")
+        }catch(e){
+            e.printStackTrace()
+        }
+        return id
+    }
+
+    static String makeUUID(){
+        return UUID.randomUUID()
+    }
+
+    static String makeReplacedUUID(){
+        return UUID.randomUUID().toString().replace('-', '')
+    }
+
+    static String macAddress(){
+        StringBuilder sb
+        InetAddress ip
+        try{
+            ip = InetAddress.getLocalHost();
+            NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+            byte[] mac = network.getHardwareAddress();
+            sb = new StringBuilder();
+            for (int i = 0; i < mac.length; i++) {
+                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+            }
+        }catch (UnknownHostException e) {
+            e.printStackTrace();
+        }catch (SocketException e){
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 
 }
