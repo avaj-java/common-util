@@ -34,7 +34,14 @@ class ConnectionGenerator{
     static final String SYBASE = "SYBASE"           // 'jdbc:sybase:Tds:' 'com.sybase.jdbc3.jdbc.SybDriver'
     static final String IBM_DB = "IBM_DB"           // 'jdbc:db2:' 'com.ibm.db2.jcc.DB2Driver'
 
-    String vendor, user, password, ip, port, db, url, driver
+    String vendor
+    String user
+    String password
+    String ip
+    String port
+    String db
+    String url
+    String driver
 
 
     ConnectionGenerator setDatasource(SqlSetup sqlOpt) {
@@ -61,14 +68,14 @@ class ConnectionGenerator{
     }
 
     ConnectionGenerator setDatasource(Map map){
-        vendor  = map['vendor']
-        user    = map['user']
-        password= map['password']
-        ip      = map['ip']
-        port    = map['port']
-        db      = map['db']
-        url     = map['url']
-        driver  = map['driver']
+        vendor  = map['vendor'] ?: map['VENDOR']
+        user    = map['user'] ?: map['USER'] ?: map['id'] ?: map['ID']
+        password= map['password'] ?: map['PASSWORD']
+        ip      = map['ip'] ?: map['IP']
+        port    = map['port'] ?: map['PORT']
+        db      = map['db'] ?: map['DB']
+        url     = map['url'] ?: map['URL']
+        driver  = map['driver'] ?: map['DRIVER']
         return this
     }
 
@@ -99,6 +106,9 @@ class ConnectionGenerator{
 
     Connection generate(){
         Sql sql = generateSqlInstance()
+        //- Log Debug
+        generateDataBaseInfoMap()
+        //- Generate Connection
         return sql.getConnection()
     }
 
