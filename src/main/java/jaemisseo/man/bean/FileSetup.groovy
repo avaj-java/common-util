@@ -17,5 +17,6 @@ class FileSetup extends Option<FileSetup> {
     Boolean modeAutoMkdir = false
     Boolean modeAutoBackup = false
     Boolean modeAutoOverWrite = false
+    Boolean modeAppendWrite = false
 
 }

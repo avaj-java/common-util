@@ -16,4 +16,32 @@ enum ChangeStatusCode {
         this.value = value
     }
 
+
+    /*************************
+     * value로 Code 찾기
+     *************************/
+    private static final Map<String, ChangeStatusCode> valueMap = new LinkedHashMap<String, ChangeStatusCode>()
+
+
+    /*****
+     * 최초 ValueMap 생성
+     *****/
+    static {
+        for (ChangeStatusCode code : values()) {
+            valueMap.put(code.value, code)
+        }
+    }
+
+    /*****
+     * value로 코드 구하기
+     *****/
+    static ChangeStatusCode findByValue(String value) {
+        return findByValue(Integer.parseInt(value))
+    }
+
+    static ChangeStatusCode findByValue(int value) {
+        return valueMap[value]
+    }
+
+
 }
