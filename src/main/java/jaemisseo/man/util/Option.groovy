@@ -150,7 +150,7 @@ class Option<T> {
      * EACH FIELDS
      *************************/
     static List<Object> makeFieldNameList(Object object){
-        List list = (object as Option).properties.keySet().toList()
+        List list = object.properties.keySet().toList()
         list -= ['class']
         return list
     }
