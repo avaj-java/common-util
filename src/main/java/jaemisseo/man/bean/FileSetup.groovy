@@ -8,6 +8,8 @@ import jaemisseo.man.util.Option
  */
 class FileSetup extends Option<FileSetup> {
 
+    String path
+
     String encoding = 'utf-8'
     String lineBreak
     String lastLineBreak = ''
@@ -18,5 +20,5 @@ class FileSetup extends Option<FileSetup> {
     Boolean modeAutoBackup = false
     Boolean modeAutoOverWrite = false
     Boolean modeAppendWrite = false
-
+    Boolean modeExcludeFileSizeZero = false
 }

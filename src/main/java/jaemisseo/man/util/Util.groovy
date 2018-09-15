@@ -197,16 +197,21 @@ class Util {
 
     static Map startPrinter(int totalSize, int barSize, boolean modePrint){
         Map data = [
-                count:0, item:null, stringList:[], printerThread:null, startTime:new Date().getTime(), totalSize:totalSize, barSize:barSize, modePrint:modePrint
+                count:0, item:null, stringList:[], errorList:[], warnList:[], infoList:[], debugList:[], traceList:[], printerThread:null, startTime:new Date().getTime(), totalSize:totalSize, barSize:barSize, modePrint:modePrint
         ]
-        List stringList = data.stringList
-        long startTime = data.startTime
 
         if (!modePrint)
             return data
 
         data.printerThread = Util.newThread(''){
 //            while ( (data.count as int) < totalSize ){
+            List stringList = data.stringList
+            List errorList = data.errorList
+            List warnList = data.warnList
+            List infoList = data.infoList
+            List debugList = data.debugList
+            List traceList = data.traceList
+            long startTime = data.startTime
             while (true){
                 //Print String and ProgressBar
                 if (stringList) {
@@ -321,7 +326,7 @@ class Util {
 
     static void clearProgressBar(int barSize){
         //Delete
-        print "\r ${(1..barSize).collect{' '}.join('') as String}"
+        print "\r ${(1..barSize).collect{' '}.join('') as String}               "
         //Init
         print "\r"
     }
