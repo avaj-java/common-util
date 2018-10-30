@@ -432,7 +432,6 @@ class Util {
     static List<String> findAllSourcePath(String sourcePath){
         List<String> resultList = []
         List<URL> urlList = Thread.currentThread().getContextClassLoader().getResources(sourcePath).toList()
-        List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('/').toList()
         urlList.each{ url ->
             if (url.protocol == 'jar'){
                 String jarPath = url.getPath().substring(5, url.getPath().indexOf("!")) //strip out only the JAR file
@@ -446,6 +445,7 @@ class Util {
                     }
                 }
             }else{
+                List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()
                 File sourceDirectory = new File(url.toURI())
                 URL rootURL = rootUrlList.find{ sourceDirectory.path.startsWith(new File(it.toURI()).path) }
                 if (rootURL){
@@ -739,7 +739,10 @@ class Util {
         String id
         try{
             id = new java.rmi.dgc.VMID()
-            id = id?.replaceAll("[^0-9.]", "")
+//            id = id?.replaceAll("[^0-9.]", "")
+            int firstColonIndex = id.indexOf(':')
+//            int lastColonIndex = id.lastIndexOf(':')
+            return id.substring(0, firstColonIndex)
         }catch(e){
             e.printStackTrace()
         }
@@ -771,6 +774,31 @@ class Util {
             e.printStackTrace();
         }
         return sb.toString();
+    }
+
+    public static void printInterfaces() {
+        Enumeration<NetworkInterface> networkInterfaces;
+        try {
+            networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            Collections.list(networkInterfaces).each{ networkInterface ->
+                try {
+                    StringBuilder sb = new StringBuilder();
+                    if (networkInterface.getHardwareAddress() != null) {
+                        byte[] mac = networkInterface.getHardwareAddress();
+                        for (int i = 0; i < mac.length; i++) {
+                            sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+                        }
+                    } else {
+                        sb.append("Interface has no MAC");
+                    }
+                    println String.format("Interface: %s  MAC: %s", networkInterface.getDisplayName(), sb.toString())
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+            };
+        } catch (SocketException e1) {
+            e1.printStackTrace();
+        }
     }
 
 }

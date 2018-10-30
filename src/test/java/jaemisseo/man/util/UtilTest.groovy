@@ -20,6 +20,81 @@ class UtilTest {
 //    }
 
 
+    @Test
+    void macTest(){
+        String a = Util.macAddress()
+        Util.printInterfaces()
+        println a
+    }
+
+    @Test
+    void vmidLoopTest(){
+        Long testCount = 999999
+
+        /** How many times it is unique? **/
+        Long cnt = 0
+        String now
+        String before
+        (1..testCount).each{
+            ++cnt
+            now = Util.makeReplacedVMID()
+            if (before && before != now){
+                println cnt
+                println now
+                throw new Exception('not same')
+            }
+            before = now
+        }
+        println '< Test Finish!!! >'
+    }
+
+    @Test
+    void vmidWithThreadTest(){
+        int threadSize = 500
+
+        /** Is it unique even with other threads? **/
+        Map<String, List<String>> threadAndIdListMap = [:]
+        Long cnt = 0
+        String now
+        String before
+        //- Making id
+        (1..threadSize).each{ Integer count ->
+            Thread thread = new Thread(new Runnable(){void run(){
+                Thread.sleep(1)
+                String makedID = new Date().getTime() + '-' + Util.makeUUID()
+                List idList = (1..100).collect{
+                    Thread.sleep(1)
+                    return Util.makeReplacedVMID()
+                }
+                putToMap(threadAndIdListMap, makedID, idList)
+                println "[${makedID}] collecting done."
+            }}).start()
+        }
+        //- Waiting
+        while (threadAndIdListMap.size() < threadSize){
+            sleep(1000)
+            println 'wait'
+        }
+        println "< Collecting Finish!!! > - Size: ${threadAndIdListMap.size()}"
+
+        //- Checking no duplication
+        threadAndIdListMap.each{ String threadId, List<String> idList ->
+            idList.each{ String id ->
+                now = id
+                if (before && before != now){
+                    println cnt
+                    println now
+                    throw new Exception('not same')
+                }
+                before = now
+            }
+        }
+        println '< Test Finish!!! >'
+    }
+
+    synchronized void putToMap(Map map, String key, Object value){
+        map[key] = value
+    }
 
 
 
