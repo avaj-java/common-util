@@ -445,9 +445,13 @@ class Util {
                     }
                 }
             }else{
-                List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()
+                List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()  // lib dir
+                rootUrlList += Thread.currentThread().getContextClassLoader().getResources('/').toList()  // classes dir
                 File sourceDirectory = new File(url.toURI())
-                URL rootURL = rootUrlList.find{ sourceDirectory.path.startsWith(new File(it.toURI()).path) }
+                URL rootURL = rootUrlList.find{
+                    String rootPath = new File(it.toURI()).path
+                    return sourceDirectory.path.startsWith(rootPath)
+                }
                 if (rootURL){
                     File rootDirectory = new File(rootURL.toURI())
                     resultList.addAll( findAllSourcePath(sourceDirectory, rootDirectory) )
