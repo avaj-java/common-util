@@ -107,7 +107,7 @@ class ConnectionGenerator{
     Connection generate(){
         Sql sql = generateSqlInstance()
         //- Log Debug
-        generateDataBaseInfoMap()
+//        generateDataBaseInfoMap()
         //- Generate Connection
         return sql.getConnection()
     }
