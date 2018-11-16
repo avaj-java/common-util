@@ -548,19 +548,19 @@ class Util {
                     Class clazz = Class.forName(classpath)
                     clazzList << clazz
                 }catch(ExceptionInInitializerError eiie){
-                    logger.error(classpath, eiie)
+                    logger.trace(classpath, eiie)
                 }catch(NoClassDefFoundError ncdfe) {
-                    logger.error(classpath, ncdfe)
+                    logger.trace(classpath, ncdfe)
                 }catch(UnsupportedClassVersionError ucve){
-                    logger.error(classpath, ucve)
+                    logger.trace(classpath, ucve)
                 }catch(UnsatisfiedLinkError ule){
-                    logger.error(classpath, ule)
+                    logger.trace(classpath, ule)
                 }catch(InternalError ie){
-                    logger.error(classpath, ie)
+                    logger.trace(classpath, ie)
                 }catch(VerifyError ve){
-                    logger.error(classpath, ve)
+                    logger.trace(classpath, ve)
                 }catch(Exception e){
-                    logger.error(classpath, e)
+                    logger.trace(classpath, e)
                 }
             }
         }
