@@ -450,7 +450,6 @@ class Util {
 //                InputStream is1 = Thread.currentThread().getContextClassLoader().getResourceAsStream('./')
 //                InputStream is2 = Thread.currentThread().getContextClassLoader().getResourceAsStream('/')
                 File sourceDirectory = new File(url.toURI())
-                rootUrlList1.findAll{ new File (it.toURI()) }
                 URL rootURL = (rootUrlList1 + rootUrlList2).find{
                     try{
                         String rootPath = new File(it.toURI()).path
