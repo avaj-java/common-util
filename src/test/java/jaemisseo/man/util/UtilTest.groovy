@@ -6,6 +6,7 @@ import jaemisseo.man.util.test.bean.AnnotationTest1
 import jaemisseo.man.util.test.bean.AnnotationTest3
 import org.junit.Ignore
 import org.junit.Test
+import org.junit.rules.ExpectedException
 
 /**
  * Created by sujkim on 2017-05-31.
@@ -294,6 +295,25 @@ class UtilTest {
             println clazz.getDeclaredMethods()
             println '===== ===== ===== ===== ===== ===== ====='
         }
+    }
+
+    /** java.lang.IllegalArgumentException: URI not hierarchical **/
+    @Test(expected = java.lang.IllegalArgumentException)
+    void uriTestError(){
+        new File(new URL('file:jar:/D:/java/projects/asd/af/asdfdf.jar!/Xd/').toURI())
+    }
+
+    @Test(expected = java.lang.IllegalArgumentException)
+    void uriTestError2(){
+        // It works.
+        new File(new URL('file:/D:/java/projects/asd/af/asdfdf.jar!/Xd/').toURI())
+        // but, It does not works.
+        new File(new URL('file:D:/java/projects/asd/af/asdfdf.jar!/Xd/').toURI())
+    }
+
+    @Test(expected = java.lang.IllegalArgumentException)
+    void uriTestErrror3(){
+        new File( new URL('jar:file:/C:/hahaha/project_something/build/libs/exploded/name-v0.1.2.015.war/WEB-INF/lib/xpp3_min-1.1.4c.jar!/').toURI())
     }
 
 

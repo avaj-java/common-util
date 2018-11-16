@@ -445,12 +445,23 @@ class Util {
                     }
                 }
             }else{
-                List<URL> rootUrlList = Thread.currentThread().getContextClassLoader().getResources('./').toList()  // lib dir
-                rootUrlList += Thread.currentThread().getContextClassLoader().getResources('/').toList()  // classes dir
+                List<URL> rootUrlList1 = Thread.currentThread().getContextClassLoader().getResources('./').toList()  // lib dir
+                List<URL> rootUrlList2 = Thread.currentThread().getContextClassLoader().getResources('/').toList()  // classes dir
+//                InputStream is1 = Thread.currentThread().getContextClassLoader().getResourceAsStream('./')
+//                InputStream is2 = Thread.currentThread().getContextClassLoader().getResourceAsStream('/')
                 File sourceDirectory = new File(url.toURI())
-                URL rootURL = rootUrlList.find{
-                    String rootPath = new File(it.toURI()).path
-                    return sourceDirectory.path.startsWith(rootPath)
+                rootUrlList1.findAll{ new File (it.toURI()) }
+                URL rootURL = (rootUrlList1 + rootUrlList2).find{
+                    try{
+                        String rootPath = new File(it.toURI()).path
+                        return sourceDirectory.path.startsWith(rootPath)
+                    }catch(e){
+//                        logger.warn "URL: ${it}"
+//                        logger.warn "URI: ${it.toURI()}"
+//                        logger.warn e.message
+//                        logger.trace ("Error", e)
+                        return false
+                    }
                 }
                 if (rootURL){
                     File rootDirectory = new File(rootURL.toURI())
@@ -547,6 +558,8 @@ class Util {
                     logger.error(classpath, ule)
                 }catch(InternalError ie){
                     logger.error(classpath, ie)
+                }catch(VerifyError ve){
+                    logger.error(classpath, ve)
                 }catch(Exception e){
                     logger.error(classpath, e)
                 }
