@@ -22,6 +22,7 @@ class UtilTest {
 
 
     @Test
+    @Ignore
     void macTest(){
         String a = Util.macAddress()
         Util.printInterfaces()
