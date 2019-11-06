@@ -1,8 +1,6 @@
 package jaemisseo.man.util
 
 import jaemisseo.man.annotation.OptionKey
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import java.lang.reflect.Field
 
@@ -10,8 +8,6 @@ import java.lang.reflect.Field
  * Created by sujkim on 2017-02-19.
  */
 class Option<T> {
-
-    static Logger logger = LoggerFactory.getLogger(this.getClass())
 
 
 
@@ -47,6 +43,15 @@ class Option<T> {
 
 
     /*************************
+     * Map
+     *************************/
+    Map<String, Object> toMap(){
+        return Option.put(this, [:])
+    }
+
+
+
+    /*************************
      * Put
      *************************/
     T put(Map filedValueMap){
@@ -60,7 +65,6 @@ class Option<T> {
      *************************/
     T merge(Option newOption){
         Option oldOption = this
-        logger.trace "Trying to merge..."
         oldOption.eachFieldName{ String fieldName ->
             try{
                 oldOption[fieldName] = (newOption.hasProperty(fieldName) && oldOption.hasProperty(fieldName) && newOption[fieldName] != null && newOption[fieldName] != '') ? newOption[fieldName] : oldOption[fieldName]
@@ -135,7 +139,7 @@ class Option<T> {
         return !!properties.hasProperty(fieldName)
     }
 
-    boolean isDefaultType(){
+    boolean checkDefaultType(value){
         return false
     }
 
@@ -252,7 +256,7 @@ class Option<T> {
                 def toObject = completedObject.class.newInstance()
                 fromObject.each{ String filedNameToChange, def value ->
                     try{
-                        toObject[filedNameToChange] = (isDefaultType(value)) ? value : value.class.newInstance()
+                        toObject[filedNameToChange] = (checkDefaultType(value)) ? value : value.class.newInstance()
                     }catch(e){
                     }
                 }
