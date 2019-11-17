@@ -6,7 +6,6 @@ import jaemisseo.man.util.test.bean.AnnotationTest1
 import jaemisseo.man.util.test.bean.AnnotationTest3
 import org.junit.Ignore
 import org.junit.Test
-import org.junit.rules.ExpectedException
 
 /**
  * Created by sujkim on 2017-05-31.
@@ -284,7 +283,7 @@ class UtilTest {
         assert [AnnotationTest1] == Util.findAllClasses("jaemisseo.man", AnnotationTestA){ return true }
 
         ///////////////////////// Condition( Package + AnnotationList )
-        assert [AnnotationTest1, AnnotationTest3] == Util.findAllClasses("jaemisseo.man", [AnnotationTestB, AnnotationTestA])
+        assert [AnnotationTest1, AnnotationTest3] == Util.findAllClasses("jaemisseo.man", [AnnotationTestA, AnnotationTestB])
 
         println '\n\n///////////////////////// FInd All Infomation'
         Util.findAllClasses().each { Class clazz ->
