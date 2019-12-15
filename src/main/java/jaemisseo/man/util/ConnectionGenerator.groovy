@@ -28,6 +28,7 @@ class ConnectionGenerator{
     static final String ORACLE = "ORACLE"           // 'jdbc:oracle:thin:' 'oracle.jdbc.driver.OracleDriver'
     static final String TIBERO = "TIBERO"           // 'jdbc:tibero:thin:' 'com.tmax.tibero.jdbc.TbDriver'
     static final String MYSQL = "MYSQL"             // 'jdbc:mysql:' 'com.mysql.jdbc.Driver'
+    static final String POSTGRESQL = "POSTGRESQL"   // 'jdbc:postgresql:' 'org.postgresql.Driver' //TODO: need to check some version is different
     static final String MSSQL = "MSSQL"             // 'jdbc:sqlserver:' 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
     static final String INFORMIX = "INFORMIX"       // 'jdbc:informix-sqli:' 'com.informix.jdbc.IfxDriver'
     static final String ALTIBASE = "ALTIBASE"       // 'jdbc:Altibase:' 'Altibase.jdbc.driver.AltibaseDriver'
@@ -129,6 +130,9 @@ class ConnectionGenerator{
             case MYSQL:
                 driver = 'com.mysql.jdbc.Driver'
                 break
+            case POSTGRESQL:
+                driver = 'org.postgresql.Driver'
+                break
             case MSSQL:
                 driver = 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
                 break
@@ -162,6 +166,9 @@ class ConnectionGenerator{
                 break
             case MYSQL:
                 URLProtocol = "jdbc:mysql://${ip}:${port}/${db}"
+                break
+            case POSTGRESQL:
+                URLProtocol = "jdbc:postgresql://${ip}:${port}/${db}"
                 break
             case MSSQL:
                 URLProtocol = "jdbc:sqlserver:${ip}:${port}:${db}"

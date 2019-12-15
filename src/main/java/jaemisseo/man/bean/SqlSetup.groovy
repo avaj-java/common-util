@@ -28,6 +28,7 @@ class SqlSetup extends Option<SqlSetup> {
     def replaceFunction
     def replaceTablespace
     def replaceUser
+    def replaceOwner
     def replaceDatafile
     def replacePassword
 

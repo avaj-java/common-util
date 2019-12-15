@@ -296,8 +296,15 @@ class Util {
 
     static void printProgressBar(int currentCount, int totalSize, int barSize, long startTime){
         //Calculate
-        int curCntInBar = (currentCount / totalSize) * barSize
-        int curPercent = (currentCount / totalSize) * 100
+        int curCntInBar = 0
+        int curPercent = 0
+        if (totalSize){
+            curCntInBar = (currentCount / totalSize) * barSize
+            curPercent = (currentCount / totalSize) * 100
+        }else{
+            curCntInBar = 1 * barSize
+            curPercent = 100
+        }
 
         //Print Start
         print '\r['
