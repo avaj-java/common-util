@@ -2,8 +2,9 @@ group 'jaemisseo'
 
 apply plugin: 'groovy'
 apply plugin: 'java'
+apply plugin: 'idea'
 
-sourceCompatibility = 1.5
+sourceCompatibility = JavaVersion.VERSION_1_6
 
 /*************************
  * If Parent Gradle is modeRemoteDependencies,
