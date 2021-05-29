@@ -427,16 +427,9 @@ class SimpleDataUtil {
      * @return
      ******************************/
     static Boolean toBooleanWith(Object value){
-        value = (value == null)
-                ? null
-                : (value instanceof Boolean)
-                ? value
-                : (value instanceof Number)
-                ? value == 1
-                : (value instanceof String)
-                ? toBooleanWith(value, ["1", "Y", "TRUE", "T", "OK", "YES"], ["0", "N", "FALSE", "F", "NO"])
-                : value
-        return value
+        if (value == null)
+            return null
+        return (value instanceof Boolean) ? value : (value instanceof Number) ? value == 1 : (value instanceof String) ? toBooleanWith(value, ["1", "Y", "TRUE", "T", "OK", "YES"], ["0", "N", "FALSE", "F", "NO"]) : value
     }
 
     static Boolean toBooleanWith(String value, List<String> trueMeaningPackage, List<String> falseMeaningPackage){
