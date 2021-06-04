@@ -92,22 +92,25 @@ class SimpleDataUtil {
     }
 
     static Object parseSimpleObjectExpression(String value){
+        if (value == null)
+            return null
+
         Object result
-        if (value){
-            if (value.startsWith('[') && value.endsWith(']')){
-                if (value.length() == 2)
-                    return []
-                value = value.substring(1, value.length() - 1)
-                result = splitSimpleObject(value).collect{ makeValue(it) }
-            }else if (value.startsWith('{') && value.endsWith('}')){
-                if (value.length() == 2)
-                    return [:]
-                value = value.substring(1, value.length() - 1)
-                result = splitSimpleObject(value).collectEntries{makeEntry(it) }
-            }else{
-                result = generateEntries(value)
-            }
+        value = value.trim()
+        if (value.startsWith('[') && value.endsWith(']')){
+            if (value.length() == 2)
+                return []
+            value = value.substring(1, value.length() - 1)
+            result = splitSimpleObject(value).collect{ makeValue(it) }
+        }else if (value.startsWith('{') && value.endsWith('}')){
+            if (value.length() == 2)
+                return [:]
+            value = value.substring(1, value.length() - 1)
+            result = splitSimpleObject(value).collectEntries{makeEntry(it) }
+        }else{
+            result = generateEntries(value)
         }
+
         return result
     }
 

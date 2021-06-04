@@ -5,7 +5,29 @@ import org.junit.Test
 class SimpleDataUtilTest {
 
     @Test
-    void test(){
+    void simpleObject() {
+        List<Map> data = SimpleDataUtil.parseSimpleObjectExpression('[{prop1:1,prop2:"1"},{prop1:2, "prop2":"2"},{prop3:true}]')
+        assert data instanceof List
+        assert data[0]['prop1'] == 1
+        assert data[0]['prop2'] == "1"
+        assert data[1]['prop1'] == 2
+        assert data[1]['prop2'] == "2"
+        assert data[2]['prop3'] == true
+    }
+
+    @Test
+    void simpleObject_space() {
+        List<Map> data = SimpleDataUtil.parseSimpleObjectExpression(' [ {    prop1: 1, prop2:   "1" } , {prop1 : 2, "prop2"    : "2"} ,{prop3 :true}  ]   ')
+        assert data instanceof List
+        assert data[0]['prop1'] == 1
+        assert data[0]['prop2'] == "1"
+        assert data[1]['prop1'] == 2
+        assert data[1]['prop2'] == "2"
+        assert data[2]['prop3'] == true
+    }
+
+    @Test
+    void simpleObject_simple() {
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('search,  index,  _name:olapItmDscrText,  _definition:olapItmPathText,  value._name:<span>${_name}</span><a class="icon link" href="https://google.com/" target="_blank"></a>')
         assert (
                 data['search']
@@ -17,7 +39,7 @@ class SimpleDataUtilTest {
     }
 
     @Test
-    void testIgnoreWithinBrace(){
+    void ignoreWithinBrace(){
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('search,  index, test:[ aa ,bb,  ee ,dd, ff,667747214],number:21245')
         assert (
                 data['search']
@@ -28,7 +50,7 @@ class SimpleDataUtilTest {
     }
 
     @Test
-    void testMultipleLineText(){
+    void multipleLineText(){
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('''
         search,  
         index, 
@@ -45,7 +67,7 @@ class SimpleDataUtilTest {
 
 
     @Test
-    void testSpliter(){
+    void spliter(){
         List<String> splitedList = SimpleDataUtil.splitSimpleObject('''
         "mode\\"Use": true,
         "include":[{usrNm:수중,usrId:sujung},{usrNm:뚜둥}],
@@ -70,7 +92,7 @@ class SimpleDataUtilTest {
     }
 
     @Test
-    void testMultipleLineAndObjectExpText(){
+    void multipleLineAndObjectExpText(){
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('''
         "modeUse": true,
         "include":[{usrNm:수중,usrId:sujung},{usrNm:뚜둥}],
@@ -92,7 +114,7 @@ class SimpleDataUtilTest {
     }
 
     @Test
-    void testComment(){
+    void ignoreComment(){
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('''
         ui: {
             grid: [
@@ -144,7 +166,7 @@ class SimpleDataUtilTest {
 
 
     @Test
-    void testQuoteText(){
+    void quoteText(){
         Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression('''
         search,
         index,
