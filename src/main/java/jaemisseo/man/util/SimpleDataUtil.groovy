@@ -101,29 +101,72 @@ class SimpleDataUtil {
             if (value.length() == 2)
                 return []
             value = value.substring(1, value.length() - 1)
-            result = splitSimpleObject(value).collect{ makeValue(it) }
+            result = generateValues(value)
+
         }else if (value.startsWith('{') && value.endsWith('}')){
             if (value.length() == 2)
                 return [:]
             value = value.substring(1, value.length() - 1)
-            result = splitSimpleObject(value).collectEntries{makeEntry(it) }
+            result = generateEntriesAsItIs(value)
+
         }else{
-            result = generateEntries(value)
+            result = generateEntriesAsDepthByDot(value)
         }
 
         return result
     }
 
-    static Map<String, Object> generateEntries(String simpleObjectExpression){
+    static Object parseSimpleObjectExpressionAsFlattenKey(String value){
+        if (value == null)
+            return null
+
+        Object result
+        value = value.trim()
+        if (value.startsWith('[') && value.endsWith(']')){
+            if (value.length() == 2)
+                return []
+            value = value.substring(1, value.length() - 1)
+            result = generateValues(value)
+
+        }else if (value.startsWith('{') && value.endsWith('}')){
+            if (value.length() == 2)
+                return [:]
+            value = value.substring(1, value.length() - 1)
+            result = generateEntriesAsItIs(value)
+
+        }else{
+            result = generateEntriesAsItIs(value)
+        }
+
+        return result
+    }
+
+    static List<Object> generateValues(String simpleObjectExpression){
+        if (simpleObjectExpression == null)
+            return null
+        List<String> valueStrings = splitSimpleObject(simpleObjectExpression)
+        List<Object> values = valueStrings?.collect{valueString -> makeValue(valueString) }
+        return values
+    }
+
+    static Map<String, Object> generateEntriesAsItIs(String simpleObjectExpression){
+        if (simpleObjectExpression == null)
+            return null
+        List<String> entryStrings = splitSimpleObject(simpleObjectExpression)
+        Map<String, Object> entries = entryStrings?.collectEntries{ entryString -> makeEntry(entryString) }
+        return entries
+    }
+
+    static Map<String, Object> generateEntriesAsDepthByDot(String simpleObjectExpression){
         Map<String, Object> entries = [:]
         if (simpleObjectExpression){
-            def entryArray = splitSimpleObject(simpleObjectExpression)
+            List<String> entryArray = splitSimpleObject(simpleObjectExpression)
             entryArray?.each{ entryString ->
                 AbstractMap.SimpleEntry entry = makeEntry(entryString)
                 consistEntry(
                         entries,
                         entry.key,
-                        makeValue(entry.value)
+                        entry.value
                 )
             }
         }
@@ -223,23 +266,25 @@ class SimpleDataUtil {
     static Object makeValue(Object value){
         if (value instanceof String){
             //- trim() line-separators, spaces
-            value = value.replaceAll('^\\s*', '').replaceAll('\\s*$', '')
+            value = powerTrim(value)
             //- remove comment
-//            if (value.startsWith("/*") || value.endsWith("*/"))
-//                value.replaceAll('^[/][*].*[*][/]', '').replaceAll('[/][*].*[*][/]$', '')
+//            value = (value.startsWith("/*") || value.endsWith("*/")) ? removeComment(value) : value
+
             //- Make some object
             if (value.startsWith('[') && value.endsWith(']')){
                 //- Check []
                 if (value.length() == 2)
                     return []
                 value = value.substring(1, value.length() - 1)
-                value = splitSimpleObject(value).collect{ makeValue(it) }
+                value = generateValues(value)
+
             }else if (value.startsWith('{') && value.endsWith('}')){
                 //- Check {}
                 if (value.length() == 2)
                     return [:]
                 value = value.substring(1, value.length() - 1)
-                value = splitSimpleObject(value).collectEntries{makeEntry(it)  }
+                value = generateEntriesAsItIs(value)
+
             }else{
                 if (value.isNumber()) {
                     value = new BigDecimal(value.toString().trim())
@@ -251,11 +296,10 @@ class SimpleDataUtil {
                     value = false
                 }else{
                     //TODO: Range 처리 적용
-                    boolean statusQuotedString = checkStatusQuotedString(value)
-                    if (statusQuotedString){
+                    if (checkStatusQuotedString(value)){
                         value = extractValueFromQuote(value)
-                    }else{
-//                        value = resolveRangeExpression(value)
+                    }else if (checkStatusRangeExpression(value)){
+                        value = resolveRangeExpression(value)
                     }
                 }
             }
@@ -263,16 +307,34 @@ class SimpleDataUtil {
         return value
     }
 
-    static boolean checkStatusQuotedString(String quoteValue){
+    static String powerTrim(String value){
+        return value.replaceAll('^\\s*', '').replaceAll('\\s*$', '')
+    }
+
+    static String removeComment(String value){
+        return value.replaceAll('^[/][*].*[*][/]', '').replaceAll('[/][*].*[*][/]$', '')
+    }
+
+    static boolean checkStatusQuotedString(String maybeQuoteValue){
         return (
                 (
-                        quoteValue.startsWith(CHAR_DOUBLE_QUOTE.toString()) && quoteValue.endsWith(CHAR_DOUBLE_QUOTE.toString())
+                        maybeQuoteValue.startsWith(CHAR_DOUBLE_QUOTE.toString()) && maybeQuoteValue.endsWith(CHAR_DOUBLE_QUOTE.toString())
                 )
                 ||
                 (
-                        quoteValue.startsWith(CHAR_SINGLE_QUOTE.toString()) && quoteValue.endsWith(CHAR_SINGLE_QUOTE.toString())
+                        maybeQuoteValue.startsWith(CHAR_SINGLE_QUOTE.toString()) && maybeQuoteValue.endsWith(CHAR_SINGLE_QUOTE.toString())
                 )
         )
+    }
+
+    static boolean checkStatusRangeExpression(String maybeRangeExpression){
+        int foundIndexForDotDot = maybeRangeExpression.indexOf("..")
+        if (foundIndexForDotDot > 0 && maybeRangeExpression.length() > foundIndexForDotDot +2)
+            return true
+        int foundIndexForDash = maybeRangeExpression.indexOf("-")
+        if (foundIndexForDash > 0 && maybeRangeExpression.length() > foundIndexForDotDot +1)
+            return true
+        return false
     }
 
     static String extractValueFromQuote(String quoteValue){
@@ -368,7 +430,7 @@ class SimpleDataUtil {
         String rangeEnd = split[1]
         if (rangeStart.isNumber() && rangeEnd.isNumber())
             (Integer.parseInt(rangeStart)..Integer.parseInt(rangeEnd)).each{
-                resultList << it.toString()
+                resultList << it
             }
         else{
             (rangeStart..rangeEnd).each{

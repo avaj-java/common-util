@@ -66,6 +66,50 @@ class SimpleDataUtilTest {
     }
 
 
+    static String simpleObjectFormatValue = '''
+        search,                                 /* boolean */
+        index.abc,                              /* boolean */ 
+        index.abcdef: Hello Depth~,             /* string */
+        index.lvl1.one: Hello lvl1 One,         /* string */
+        index.lvl1.two: Hello lvl1 Two,         /* string */
+        test:[ aa ,bb,  ee ,dd, ff,667747214],  /* array */
+        number:21245,                           /* number */
+        string:"21245"                          /* string */
+    '''
+    @Test
+    void depthByDotMap(){
+        Map<String, Object> data = SimpleDataUtil.parseSimpleObjectExpression(simpleObjectFormatValue)
+        assert (
+                data['search']
+                && data['index']['abc']
+                && data['index']['abcdef'] == "Hello Depth~"
+                && data['index']['lvl1']['one'] == "Hello lvl1 One"
+                && data['index']['lvl1']['two'] == "Hello lvl1 Two"
+                && data['test'] == ['aa', 'bb', 'ee', 'dd', 'ff', 667747214]
+                && data['number'] == 21245
+                && data['string'] == "21245"
+        )
+    }
+
+    @Test
+    void flattenKeyMap(){
+        Map<String, Object> flattenData = SimpleDataUtil.parseSimpleObjectExpressionAsFlattenKey(simpleObjectFormatValue)
+        assert (
+                flattenData['search']
+                && flattenData['index.abc']
+                && flattenData['index.abcdef'] == "Hello Depth~"
+                && flattenData['index.lvl1.one'] == "Hello lvl1 One"
+                && flattenData['index.lvl1.two'] == "Hello lvl1 Two"
+                && flattenData['test'] == ['aa', 'bb', 'ee', 'dd', 'ff', 667747214]
+                && flattenData['number'] == 21245
+                && flattenData['string'] == "21245"
+        )
+    }
+
+
+
+
+
     @Test
     void spliter(){
         List<String> splitedList = SimpleDataUtil.splitSimpleObject('''
