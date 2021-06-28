@@ -267,6 +267,7 @@ class SimpleDataUtil {
         if (value instanceof String){
             //- trim() line-separators, spaces
             value = powerTrim(value)
+
             //- remove comment
 //            value = (value.startsWith("/*") || value.endsWith("*/")) ? removeComment(value) : value
 
@@ -298,8 +299,12 @@ class SimpleDataUtil {
                     //TODO: Range 처리 적용
                     if (checkStatusQuotedString(value)){
                         value = extractValueFromQuote(value)
+
                     }else if (checkStatusRangeExpression(value)){
-                        value = resolveRangeExpression(value)
+                        try{
+                            value = resolveRangeExpression(value)
+                        }catch(Exception e){
+                        }
                     }
                 }
             }
@@ -328,13 +333,30 @@ class SimpleDataUtil {
     }
 
     static boolean checkStatusRangeExpression(String maybeRangeExpression){
+        //..
         int foundIndexForDotDot = maybeRangeExpression.indexOf("..")
-        if (foundIndexForDotDot > 0 && maybeRangeExpression.length() > foundIndexForDotDot +2)
-            return true
-        int foundIndexForDash = maybeRangeExpression.indexOf("-")
-        if (foundIndexForDash > 0 && maybeRangeExpression.length() > foundIndexForDotDot +1)
-            return true
+        if (foundIndexForDotDot > 0 && maybeRangeExpression.length() > foundIndexForDotDot +2){
+            String[] array = maybeRangeExpression.split("[.][.]")
+            if (array.length == 2){
+                boolean validStatusThatBothAreNumber = (array[0].isNumber() && array[1].isNumber())
+                boolean validStatusThatSameEachCharLength = (!array[0].isNumber() && !array[1].isNumber() && array[0].length() == array[1].length())
+                return validStatusThatBothAreNumber || validStatusThatSameEachCharLength
+            }
+        }
         return false
+
+        //-
+//        int foundIndexForDash = maybeRangeExpression.indexOf("-")
+//        if (foundIndexForDash > 0 && maybeRangeExpression.length() > foundIndexForDotDot +1){
+//            String[] array = maybeRangeExpression.split("..")
+//            if (array.length == 2){
+//                boolean validStatusThatBothAreNumber = (array[0].isNumber() && array[1].isNumber())
+//                boolean validStatusThatSameEachCharLength = (!array[0].isNumber() && !array[1].isNumber() && array[0].length() == array[1].length())
+//                return validStatusThatBothAreNumber || validStatusThatSameEachCharLength
+//            }
+//        }
+//
+//        return false
     }
 
     static String extractValueFromQuote(String quoteValue){
