@@ -543,8 +543,22 @@ class Util {
 
 
     static List<Class> findAllClasses(String packageName, Closure closure) throws ClassNotFoundException, IOException {
+        List<Class> clazzList = new Util().findAllClassesFrom(packageName, closure)
+        return clazzList
+    }
+
+    List<Class> findAllClassesFrom(String packageName, Closure closure) {
         List<Class> clazzList = []
         List<String> entryList = findAllSourcePathByPackageName(packageName)
+
+        Thread thread = Thread.currentThread()
+        ClassLoader clsLoader = thread.getContextClassLoader();
+        List<URL> urlList = Thread.currentThread().getContextClassLoader().getResources(packageName.replace('.', '/')).toList()
+        if (urlList){
+            URLClassLoader urlClassLoader = new URLClassLoader( urlList.collect{ new File(it.getPath().replaceAll("jar:file:","").replaceAll("!/jaemisseo/man", "")).toURL() } as URL[], clsLoader)
+            thread.setContextClassLoader( urlClassLoader )
+        }
+
         entryList.each{ entityRelpath ->
             //remove .class
             //replace / => .
@@ -552,7 +566,21 @@ class Util {
                 String classpath = entityRelpath.substring(0, entityRelpath.length() - 6).replaceAll(/[\/\\]+/, '.')
                 try{
                     logger.trace(classpath)
-                    Class clazz = Class.forName(classpath)
+                    Class clazz = null;
+                    if (!clazz){
+                        try{
+                            clazz = Class.forName(classpath)
+                        }catch(e){
+                            e
+                        }
+                    }
+                    if (!clazz){
+                        try{
+                            clazz = Class.forName(classpath, true, clsLoader )
+                        }catch(e){
+                            e
+                        }
+                    }
                     clazzList << clazz
                 }catch(ExceptionInInitializerError eiie){
                     logger.trace(classpath, eiie)
@@ -573,7 +601,8 @@ class Util {
         }
         if (closure)
             clazzList = clazzList.findAll{ closure(it) }
-        return clazzList
+        //TODO: Use Set
+        return clazzList.unique()
     }
 
     static List<Class> findAllClasses(String packageName, Class annotationClass, Closure closure) throws ClassNotFoundException, IOException {
