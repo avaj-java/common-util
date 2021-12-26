@@ -438,7 +438,9 @@ class Util {
 
     static List<String> findAllSourcePath(String sourcePath){
         List<String> resultList = []
+
         List<URL> urlList = Thread.currentThread().getContextClassLoader().getResources(sourcePath).toList()
+
         urlList.each{ url ->
             if (url.protocol == 'jar'){
                 String jarPath = url.getPath().substring(5, url.getPath().indexOf("!")) //strip out only the JAR file
@@ -605,11 +607,18 @@ class Util {
         return clazzList.unique()
     }
 
+
+
     static List<Class> findAllClasses(String packageName, Class annotationClass, Closure closure) throws ClassNotFoundException, IOException {
         return findAllClasses(packageName, [annotationClass], closure)
     }
 
     static List<Class> findAllClasses(String packageName, List<Class> annotationList, Closure closure) throws ClassNotFoundException, IOException {
+        List<Class> clazzList = new Util().findAllClassesFrom(packageName, annotationList, closure)
+        return clazzList
+    }
+
+    List<Class> findAllClassesFrom(String packageName, List<Class> annotationList, Closure closure) {
         List<Class> clazzList = findAllClasses(packageName){ Class clazz ->
             try{
                 return clazz.getAnnotations().findAll{ annotationList.contains(it.annotationType()) }
@@ -624,6 +633,8 @@ class Util {
             clazzList = clazzList.findAll{ closure(it) }
         return clazzList
     }
+
+
 
     static boolean validateForClass(Class clazz){
         // Validate - Only Instance Makable Class
