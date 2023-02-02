@@ -16,6 +16,6 @@ Java utils
 2. Set dependencies
     ```gradle
     dependencies {
-      implementation 'com.github.avaj-java:common-util:0.4.0'
+      implementation 'com.github.avaj-java:common-util:0.4.2'
     }
     ```
