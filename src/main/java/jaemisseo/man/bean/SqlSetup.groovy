@@ -27,6 +27,9 @@ class SqlSetup extends Option<SqlSetup> {
     def replaceView
     def replaceFunction
     def replaceTablespace
+    def replaceSchema
+    def replaceSchemaForObject
+    def replaceForceSchemaForObject
     def replaceUser
     def replaceOwner
     def replaceDatafile
@@ -47,14 +50,18 @@ class SqlSetup extends Option<SqlSetup> {
 
 
     SqlSetup setup(){
-        ConnectionGenerator conGen = new ConnectionGenerator(this)
+        ConnectionGenerator conGen = generateConnectionGenerator()
         url = conGen.url
         driver = conGen.driver
         return this
     }
 
+    ConnectionGenerator generateConnectionGenerator(){
+        return new ConnectionGenerator(this)
+    }
+
     Sql generateSqlInstance(){
-        ConnectionGenerator conGen = new ConnectionGenerator(this)
+        ConnectionGenerator conGen = generateConnectionGenerator()
         return conGen.generateSqlInstance()
     }
 
