@@ -1,9 +1,11 @@
 package jaemisseo.man.util
 
 import groovy.json.JsonSlurper
+
+import java.sql.Clob
 import java.text.SimpleDateFormat
 
-class SimpleDataUtil {
+public class SimpleDataUtil {
 
     static final String TYPE_JSON = "JSON";
     static final String TYPE_SIMPLEJSON = "SIMPLEJSON"; //Created by souljungkim.
@@ -63,7 +65,7 @@ class SimpleDataUtil {
             value = value.substring(1, value.length() - 1)
         }
 
-        result = splitSimpleObject(value).collect{ makeValue(it) }
+        result = splitSimpleObject(value).collect{ makeValueAsDepthByDot(it) }
         return result
     }
 
@@ -107,7 +109,7 @@ class SimpleDataUtil {
             if (value.length() == 2)
                 return [:]
             value = value.substring(1, value.length() - 1)
-            result = generateEntriesAsItIs(value)
+            result = generateEntriesAsDepthByDot(value)
 
         }else{
             result = generateEntriesAsDepthByDot(value)
@@ -132,58 +134,70 @@ class SimpleDataUtil {
             if (value.length() == 2)
                 return [:]
             value = value.substring(1, value.length() - 1)
-            result = generateEntriesAsItIs(value)
+            result = generateEntriesAsFlattenKey(value)
 
         }else{
-            result = generateEntriesAsItIs(value)
+            result = generateEntriesAsFlattenKey(value)
         }
 
         return result
     }
 
-    static List<Object> generateValues(String simpleObjectExpression){
+
+
+    private static List<Object> generateValues(String simpleObjectExpression){
         if (simpleObjectExpression == null)
             return null
         List<String> valueStrings = splitSimpleObject(simpleObjectExpression)
-        List<Object> values = valueStrings?.collect{valueString -> makeValue(valueString) }
+        List<Object> values = valueStrings?.collect{valueString -> makeValueAsDepthByDot(valueString) }
         return values
     }
 
-    static Map<String, Object> generateEntriesAsItIs(String simpleObjectExpression){
+    private static Map<String, Object> generateEntriesAsFlattenKey(String simpleObjectExpression){
         if (simpleObjectExpression == null)
             return null
         List<String> entryStrings = splitSimpleObject(simpleObjectExpression)
-        Map<String, Object> entries = entryStrings?.collectEntries{ entryString -> makeEntry(entryString) }
-        return entries
-    }
-
-    static Map<String, Object> generateEntriesAsDepthByDot(String simpleObjectExpression){
-        Map<String, Object> entries = [:]
-        if (simpleObjectExpression){
-            List<String> entryArray = splitSimpleObject(simpleObjectExpression)
-            entryArray?.each{ entryString ->
-                AbstractMap.SimpleEntry entry = makeEntry(entryString)
-                consistEntry(
-                        entries,
-                        entry.key,
-                        entry.value
-                )
-            }
+        Map<String, Object> entries = entryStrings?.collectEntries{ entryString ->
+            makeEntryAsFlattenKey(entryString)
         }
         return entries
     }
 
+    private static Map<String, Object> generateEntriesAsDepthByDot(String simpleObjectExpression){
+        Map<String, Object> entries = [:]
+        if (simpleObjectExpression == null)
+            return entries
+        List<String> entryArray = splitSimpleObject(simpleObjectExpression)
+        entryArray?.each{ entryString ->
+            AbstractMap.SimpleEntry entry = makeEntryAsDepthByDot(entryString)
+            consistEntry(entries, entry.key,entry.value)
+        }
+
+        return entries
+    }
+
+
+
     static List<String> splitSimpleObject(String simpleObjectExpression){
+        List<String> splited = splitSimpleObject(simpleObjectExpression, CHAR_COMMA, false)
+        return splited
+    }
+
+    static List<String> splitSimpleObject(String simpleObjectExpression, char spliter, boolean modeIgnoreBraceAndBracket){
         List<String> splitedList = []
         StringBuilder sb = new StringBuilder()
         simpleObjectExpression = simpleObjectExpression?.trim()
         char[] chars = simpleObjectExpression.toCharArray()
         List<Integer> commaIndexList = []
-        char charBefore, currentQuote
+        Character c, charBefore, currentQuote
         boolean statusCommenting = false
         boolean statusSeperating = false
         int brace = 0, curlyBrace = 0, bracket = 0
-        chars.eachWithIndex{ c, i ->
+        boolean needToNextCheck = false;
+
+        for (int i=0; i<chars.length; i++){
+            c = chars[i];
+
             if (!charBefore.equals(CHAR_BLACK_SLASH)){
                 if (currentQuote){
                     currentQuote = (currentQuote.equals(c)) ? null : currentQuote
@@ -196,22 +210,35 @@ class SimpleDataUtil {
 
 
                 }else{
-                    switch (c){
-                        case CHAR_BRACE_OPEN: ++brace; break;
-                        case CHAR_BRACE_CLOSE: --brace; break;
-                        case CHAR_CURLY_BRACE_OPEN: ++curlyBrace; break;
-                        case CHAR_CURLY_BRACE_CLOSE: --curlyBrace; break;
-                        case CHAR_BRACKET_OPEN: ++bracket; break;
-                        case CHAR_BRACKET_CLOSE: --bracket; break;
-                        case CHAR_SINGLE_QUOTE: currentQuote = CHAR_SINGLE_QUOTE; break;
-                        case CHAR_DOUBLE_QUOTE: currentQuote = CHAR_DOUBLE_QUOTE; break;
-                        default:
-                            //Right separator
-                            statusSeperating = c.equals(CHAR_COMMA) && !brace && !curlyBrace && !bracket
-                            if (statusSeperating)
-                                commaIndexList << i
-                            break;
+
+                    needToNextCheck = true
+                    if (needToNextCheck && !modeIgnoreBraceAndBracket){
+                        needToNextCheck = false
+                        switch (c){
+                            case CHAR_BRACE_OPEN: ++brace; break;
+                            case CHAR_BRACE_CLOSE: --brace; break;
+                            case CHAR_CURLY_BRACE_OPEN: ++curlyBrace; break;
+                            case CHAR_CURLY_BRACE_CLOSE: --curlyBrace; break;
+                            case CHAR_BRACKET_OPEN: ++bracket; break;
+                            case CHAR_BRACKET_CLOSE: --bracket; break;
+                            default:
+                                needToNextCheck = true
+                                break;
+                        }
                     }
+                    if (needToNextCheck){
+                        switch (c){
+                            case CHAR_SINGLE_QUOTE: currentQuote = CHAR_SINGLE_QUOTE; break;
+                            case CHAR_DOUBLE_QUOTE: currentQuote = CHAR_DOUBLE_QUOTE; break;
+                            default:
+                                //Right separator
+                                statusSeperating = c.equals(spliter) && brace == 0 && curlyBrace == 0 && bracket == 0
+                                if (statusSeperating)
+                                    commaIndexList << i
+                                break;
+                        }
+                    }
+
                 }
             }
 
@@ -242,14 +269,16 @@ class SimpleDataUtil {
         return splitedList
     }
 
-    static AbstractMap.SimpleEntry makeEntry(String entryString){
+
+
+    private static AbstractMap.SimpleEntry makeEntryAsDepthByDot(String entryString){
         Integer firstColonIndex = entryString?.indexOf(':')
         String key
         Object value
         if (firstColonIndex != -1){
             key = entryString?.substring(0, firstColonIndex)?.trim()
             value = entryString?.substring(firstColonIndex +1, entryString.length())?.trim()
-            value = makeValue(value)
+            value = makeValueAsDepthByDot(value)
         }else{
             key = entryString
             value = true
@@ -263,7 +292,30 @@ class SimpleDataUtil {
         return new AbstractMap.SimpleEntry<String, Object>(key, value)
     }
 
-    static Object makeValue(Object value){
+    private static AbstractMap.SimpleEntry makeEntryAsFlattenKey(String entryString){
+        Integer firstColonIndex = entryString?.indexOf(':')
+        String key
+        Object value
+        if (firstColonIndex != -1){
+            key = entryString?.substring(0, firstColonIndex)?.trim()
+            value = entryString?.substring(firstColonIndex +1, entryString.length())?.trim()
+            value = makeValueAsFlattenKey(value)
+        }else{
+            key = entryString
+            value = true
+        }
+
+        boolean statusQuotedString = checkStatusQuotedString(key)
+        if (statusQuotedString){
+            key = extractValueFromQuote(key)
+        }
+
+        return new AbstractMap.SimpleEntry<String, Object>(key, value)
+    }
+
+
+
+    private static Object makeValueAsDepthByDot(Object value){
         if (value instanceof String){
             //- trim() line-separators, spaces
             value = powerTrim(value)
@@ -284,7 +336,7 @@ class SimpleDataUtil {
                 if (value.length() == 2)
                     return [:]
                 value = value.substring(1, value.length() - 1)
-                value = generateEntriesAsItIs(value)
+                value = generateEntriesAsDepthByDot(value)
 
             }else{
                 if (value.isNumber()) {
@@ -312,15 +364,67 @@ class SimpleDataUtil {
         return value
     }
 
-    static String powerTrim(String value){
+    private static Object makeValueAsFlattenKey(Object value){
+        if (value instanceof String){
+            //- trim() line-separators, spaces
+            value = powerTrim(value)
+
+            //- remove comment
+//            value = (value.startsWith("/*") || value.endsWith("*/")) ? removeComment(value) : value
+
+            //- Make some object
+            if (value.startsWith('[') && value.endsWith(']')){
+                //- Check []
+                if (value.length() == 2)
+                    return []
+                value = value.substring(1, value.length() - 1)
+                value = generateValues(value)
+
+            }else if (value.startsWith('{') && value.endsWith('}')){
+                //- Check {}
+                if (value.length() == 2)
+                    return [:]
+                value = value.substring(1, value.length() - 1)
+                value = generateEntriesAsFlattenKey(value)
+
+            }else{
+                if (value.isNumber()) {
+                    value = new BigDecimal(value.toString().trim())
+                }else if ("null".equals(value)){
+                    value = null
+                }else if ("true".equals(value)){
+                    value = true
+                }else if ("false".equals(value)){
+                    value = false
+                }else{
+                    //TODO: Range 처리 적용
+                    if (checkStatusQuotedString(value)){
+                        value = extractValueFromQuote(value)
+
+                    }else if (checkStatusRangeExpression(value)){
+                        try{
+                            value = resolveRangeExpression(value)
+                        }catch(Exception e){
+                        }
+                    }
+                }
+            }
+        }
+        return value
+    }
+
+
+
+
+    private static String powerTrim(String value){
         return value.replaceAll('^\\s*', '').replaceAll('\\s*$', '')
     }
 
-    static String removeComment(String value){
+    private static String removeComment(String value){
         return value.replaceAll('^[/][*].*[*][/]', '').replaceAll('[/][*].*[*][/]$', '')
     }
 
-    static boolean checkStatusQuotedString(String maybeQuoteValue){
+    private static boolean checkStatusQuotedString(String maybeQuoteValue){
         return (
                 (
                         maybeQuoteValue.startsWith(CHAR_DOUBLE_QUOTE.toString()) && maybeQuoteValue.endsWith(CHAR_DOUBLE_QUOTE.toString())
@@ -332,7 +436,7 @@ class SimpleDataUtil {
         )
     }
 
-    static boolean checkStatusRangeExpression(String maybeRangeExpression){
+    private static boolean checkStatusRangeExpression(String maybeRangeExpression){
         //..
         int foundIndexForDotDot = maybeRangeExpression.indexOf("..")
         if (foundIndexForDotDot > 0 && maybeRangeExpression.length() > foundIndexForDotDot +2){
@@ -359,11 +463,11 @@ class SimpleDataUtil {
 //        return false
     }
 
-    static String extractValueFromQuote(String quoteValue){
+    private static String extractValueFromQuote(String quoteValue){
         return quoteValue?.substring(1, quoteValue.length() -1)
     }
 
-    static Object consistEntry(Map<String, Object> entries, String key, Object value){
+    private static Object consistEntry(Map<String, Object> entries, String key, Object value){
         int firstDotIndex = key.indexOf('.')
         if (firstDotIndex > 0){
             String parentFieldName = key.substring(0, firstDotIndex)
@@ -612,6 +716,44 @@ class SimpleDataUtil {
             result = c
         }
         return result
+    }
+
+
+
+    public static toList(Object some){
+        if (some == null)
+            return null
+        if (some instanceof List)
+            return some
+        ArrayList list = new ArrayList<>()
+        list.add( some )
+        return list
+    }
+
+
+
+    public static toSimple(Object value){
+        Class clazz = value.getClass()
+        String className = clazz.getName()
+        if (className.equals("com.datastreams.mdosa.common.model.ObjectId")){  //toString //TODO: 아쉽지만, 일단 Class이름을 판단해보자! - ObjectId가 쓰임새가 많아서 옴기기 쉽지않고 관점을 정하기 쉽지 않음.
+            return value.toString()
+        }else if (className.equals("java.sql.Clob")){ //toString
+            return ClobUtil.convertToString(value as Clob)
+        }else if (className.equals("oracle.sql.CLOB")){ //toString
+            return ClobUtil.convertToString(value as Clob)
+        }else if (value instanceof java.sql.Date){
+            return value.getTime()
+        }else if (value instanceof java.util.Date){
+            return value.getTime()
+        }else if (className.equals("java.sql.Timestamp")){ //toDate
+            return new Date( ((java.sql.Timestamp)value).getTime() )
+        }else if (className.equals("oracle.sql.TIMESTAMP")){ //toDate
+            return value.dateValue()
+        }else if (className.equals("oracle.sql.TIMESTAMPTZ")){
+            return value.dateValue().getTime()
+        }
+
+        return value
     }
 
 }

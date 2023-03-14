@@ -26,6 +26,41 @@ class SimpleDateUtil {
 //        return java.sql.Date.valueOf(dateToConvert);
     }
 
+    public static Date toDate(Object value) {
+        Date result = null;
+        if (value instanceof String){
+            try{
+                result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value)
+            }catch(e){
+                result = new SimpleDateFormat("yyyy-MM-dd").parse(value)
+            }
+
+        }else if (value instanceof Long){
+            result = new Date(value)
+        }else if (value instanceof java.sql.Date){
+            result = new Date(value.getTime())
+        }else if (value instanceof java.sql.Timestamp){ //toDate
+            java.sql.Timestamp t = ((java.sql.Timestamp)value)
+            Date date = new Date( t.getTime() )
+            result = date
+        }else if (value instanceof Date){
+            result = value
+        }else{
+            String className = value.getClass().getName()
+            if (className.equals('oracle.sql.TIMESTAMP')){ //toDate
+                Date date = value.dateValue()
+                result = date
+            }else if (className.equals('oracle.sql.TIMESTAMPTZ')){
+                java.sql.Timestamp t = value.timestampValue()
+                Date date = new Date( t.getTime() )
+                result = date
+            }else{
+//                result = value
+            }
+        }
+        return result
+    }
+
     public static Date toDate(LocalDateTime dateToConvert) {
         return java.sql.Timestamp.valueOf(dateToConvert);
 //        return java.util.Date.from(dateToConvert.atZone(ZoneId.systemDefault()).toInstant());
@@ -95,7 +130,7 @@ class SimpleDateUtil {
     }
 
     static boolean checkElapsedTime(long lastMilliSecondTime, long validIntervalMilliSecondTime, long checkingMilliSecondTime){
-        Long elapsedTime = getElapsedTimeFrom(lastMilliSecondTime, checkingMilliSecondTime)
+        Long elapsedTime = getElapsedTimeFrom(checkingMilliSecondTime, lastMilliSecondTime)
         boolean result = validIntervalMilliSecondTime < Math.abs(elapsedTime)
         return result
     }
@@ -119,7 +154,7 @@ class SimpleDateUtil {
         return getElapsedTimeFrom(currentTime, fromTime)
     }
 
-    static Long getElapsedTimeFrom(long fromTime, long checkingMilliSecondTime){
+    static Long getElapsedTimeFrom(long checkingMilliSecondTime, long fromTime){
         Long elapsedTime = checkingMilliSecondTime - fromTime
         return elapsedTime
     }
@@ -129,27 +164,15 @@ class SimpleDateUtil {
 
     static Long toMilliSecondTime(Object value) {
         Long result = null;
-        if (value instanceof String){
-            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value).getTime()
-        }else if (value instanceof Date){
-            result = value.getTime()
-        }else{
-            String className = value.getClass().getName()
-            if (className.equals('java.sql.Timestamp')){ //toDate
-                java.sql.Timestamp t = ((java.sql.Timestamp)value)
-                Date date = new Date( t.getTime() )
-                result = date.getTime()
-            }else if (className.equals('oracle.sql.TIMESTAMP')){ //toDate
-                Date date = value.dateValue()
-                result = date.getTime()
-            }else if (className.equals('oracle.sql.TIMESTAMPTZ')){
-                java.sql.Timestamp t = value.timestampValue()
-                Date date = new Date( t.getTime() )
-                result = date.getTime()
-            }else{
-                result = value
-            }
+
+        Object date = toDate(value)
+
+        try{
+            result = (date != null && date instanceof Date) ? date.getTime() : date
+        }catch(Exception e){
+            e.printStackTrace()
         }
+
         return result
     }
 

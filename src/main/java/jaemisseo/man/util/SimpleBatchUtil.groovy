@@ -1,9 +1,20 @@
 package jaemisseo.man.util
 
 import java.nio.charset.Charset
+import java.util.function.Consumer
 
 class SimpleBatchUtil {
 
+    public static class SimpleBatchObject {
+        public SimpleBatchObject(long currentPage, long from, long to){
+            this.currentPage = currentPage;
+            this.from = from;
+            this.to = to;
+        }
+        long currentPage
+        long from
+        long to
+    }
 
     /**
      *
@@ -15,9 +26,17 @@ class SimpleBatchUtil {
         return eachPage(totalItemSize, batchSize, false, closure)
     }
 
+    static List<Error> eachPage(long totalItemSize, long batchSize, boolean modeIgnoreError, Consumer<SimpleBatchObject> consumer){
+        List<Error> results = eachPage(totalItemSize, batchSize, modeIgnoreError){ long currentPage, long from, long to ->
+            SimpleBatchObject sbo = new SimpleBatchObject(currentPage, from, to);
+            consumer.accept(sbo);
+        }
+        return results;
+    }
+
     static List<Error> eachPage(long totalItemSize, long batchSize, boolean modeIgnoreError, Closure closure){
         List<Error> errors = [];
-        if (totalItemSize == 0)
+        if (totalItemSize <= 0)
             return errors;
         if (batchSize < 1)
             return errors;
